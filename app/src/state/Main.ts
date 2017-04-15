@@ -1,15 +1,19 @@
 export class Main extends Phaser.State {
-  text: Phaser.Text;
+    map: Phaser.Tilemap;
 
-  create() {
-    let thing: String = 'code !';
-    this.text = this.add.text(10, 10, `Let's ${thing}`, {font: '65px Arial'});
-  }
-
-  update() {
-    this.text.position.x += 1;
-    if (this.text.position.x > this.scale.bounds.width) {
-      this.text.position.x = 10;
+    create() {
+        this.setupMap();
     }
-  }
+
+    setupMap() {
+        this.map = this.add.tilemap("map1");
+        this.map.addTilesetImage("tileset", "tileset");
+
+        let baseLayer = this.map.createLayer("base");
+        baseLayer.resizeWorld();
+    }
+
+    update() {
+
+    }
 }
