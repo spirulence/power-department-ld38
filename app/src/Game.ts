@@ -5,8 +5,8 @@ import { Boot, Preload, Main } from './state/States';
 class Game extends Phaser.Game {
   constructor() {
     super({
-      width: 800,
-      height: 600,
+      width: 1000,
+      height: 625,
       transparent: false,
       enableDebug: true
     });
