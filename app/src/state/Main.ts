@@ -1,15 +1,30 @@
 import {Dialogs, DialogButtons} from "../interface/Dialogs";
 import {Facilities} from "../mainstate/Facilities";
+import {Inventory} from "../mainstate/Inventory";
 
 export class Main extends Phaser.State {
     map: Phaser.Tilemap;
     facilities: Facilities;
     dialogs: Dialogs;
+    inventory: Inventory;
+    private belowText: Phaser.Text;
 
     create() {
         this.setupMap();
         this.facilities = new Facilities(this.map);
         this.setupDialogs();
+
+        let textStyle = {font:"20px monospace", fill:"#fff"};
+        this.belowText = this.add.text(0, 600, "", textStyle);
+        let belowText = this.belowText;
+
+        this.inventory = new Inventory();
+        this.facilities.setInventory(this.inventory);
+        this.inventory.addNotifier(function(inv: Inventory){
+            let dollars = inv.dollarsMillions;
+            belowText.text = `$${dollars}m`;
+        });
+        this.inventory.notify();
     }
 
     private setupMap() {
