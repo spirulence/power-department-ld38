@@ -1,33 +1,33 @@
 export interface Button{
     normal: number;
     hover: number;
-    onPress: ()=>void;
+    onPress: (tile: Phaser.Tile)=>void;
 }
 
 export class ContextDialog{
-    private group: Phaser.Group;
+    group: Phaser.Group;
+    game: Phaser.Game;
+    tile: Phaser.Tile;
 
-    constructor(position: Phaser.Point, buttons: Array<Button>, game: Phaser.Game){
+    constructor(buttons: Array<Button>, game: Phaser.Game, tile: Phaser.Tile){
         this.group = game.add.group(undefined, "contextDialog", true);
-        game.world.bringToTop(this.group);
-        this.group.position = position;
-
+        this.game = game;
+        this.game.world.bringToTop(this.group);
+        this.tile = tile;
 
         this.addButtons(buttons, game);
     }
 
-    addButtons(buttons: Array<Button>, game: Phaser.Game){
+    private addButtons(buttons: Array<Button>, game: Phaser.Game){
         let x = (buttons.length / 2) * -32;
         let y = -32/2;
 
-        let group = this.group;
-
         for (let button of buttons){
-            let closeAndFire = function(){
-                group.removeAll(true);
-                game.world.remove(group, true);
-                button.onPress();
-            };
+            let closeAndFire = function(this: ContextDialog){
+                this.close();
+                button.onPress(this.tile);
+            }.bind(this);
+
             game.add.button(x, y,
                 "buttons", closeAndFire, undefined,
                 button.hover, button.normal, button.normal, button.normal,
@@ -36,5 +36,18 @@ export class ContextDialog{
         }
     }
 
+    close(){
+        this.group.removeAll(true);
+        this.game.world.remove(this.group, true);
+    }
+
+    setPosition(position: Phaser.Point){
+        position.x = Math.min(position.x, 1000-32);
+        position.x = Math.max(position.x, 32);
+        position.y = Math.min(position.y, 600-16);
+        position.y = Math.max(position.y, 16);
+
+        this.group.position = position;
+    }
 
 }

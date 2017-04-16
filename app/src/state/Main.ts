@@ -1,13 +1,18 @@
-import {Button, ContextDialog} from "../interface/ContextDialog";
+import {Dialogs, DialogButtons} from "../interface/Dialogs";
+import {Facilities} from "../mainstate/Facilities";
 
 export class Main extends Phaser.State {
     map: Phaser.Tilemap;
+    facilities: Facilities;
+    dialogs: Dialogs;
 
     create() {
         this.setupMap();
+        this.facilities = new Facilities(this.map);
+        this.setupDialogs();
     }
 
-    setupMap() {
+    private setupMap() {
         this.map = this.add.tilemap("map1");
         this.map.addTilesetImage("tileset", "tileset");
 
@@ -20,34 +25,20 @@ export class Main extends Phaser.State {
         this.map.createBlankLayer("temporary", 125, 75, 8, 8);
     }
 
-    clickBaseLayer(mapLayer: Phaser.TilemapLayer, pointer: Phaser.Pointer){
+    private setupDialogs() {
+        this.dialogs = new Dialogs(this.game,
+            [
+                {image: DialogButtons.NewSubstation, callback: this.facilities.addSubstation.bind(this.facilities)},
+                {image: DialogButtons.NewPlant, callback: this.facilities.addPlant.bind(this.facilities)}
+            ]);
+    }
+
+    private clickBaseLayer(_mapLayer: Phaser.TilemapLayer, pointer: Phaser.Pointer){
         let powerTile = this.map.getTileWorldXY(
             pointer.position.x, pointer.position.y,
             undefined, undefined, "power", true);
 
-        if (powerTile.index === -1){
-            //no power structure at that tile
-            this.createNewBuildingDialog(pointer.position.clone());
-            console.log("popping up dialog");
-        }else{
-            console.log("not popping up dialog");
-        }
-
-        // else if powerTile.index is 6
-        //   #substation at that tile
-        // @interface.activeContextDialog = @interface.substationContextDialog
-        // else if powerTile.index is 5
-        //   #plant at that tile
-        // @interface.activeContextDialog = @interface.plantContextDialog
-    }
-
-    createNewBuildingDialog(position: Phaser.Point){
-        let empty = function(){console.log("clicked a button!")};
-        let buttons = [
-            {hover: 5, normal: 4, onPress: empty},
-            {hover: 3, normal: 2, onPress: empty}
-        ];
-        new ContextDialog(position, buttons, this.game);
+        this.dialogs.powerTileClicked(powerTile, pointer);
     }
 
     update() {
