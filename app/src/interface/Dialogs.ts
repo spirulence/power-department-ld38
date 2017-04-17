@@ -33,15 +33,19 @@ export class Dialogs{
     powerTileClicked(tile: Phaser.Tile, pointer: Phaser.Pointer){
         this.closeActiveDialog();
         this.activeDialog = this.createDialog(tile);
-        this.activeDialog.setPosition(pointer.position.clone());
+        if(this.activeDialog != null){
+            this.activeDialog.setPosition(pointer.position.clone());
+        }
     }
 
     private createDialog(tile: Phaser.Tile): ContextDialog {
         switch (tile.index) {
             case FacilityTypes.Substation:
                 return this.createNewSubstationDialog(tile);
-            default:
+            case FacilityTypes.Nothing:
                 return this.createNewBuildingDialog(tile);
+            default:
+                return null;
         }
     }
 

@@ -72,8 +72,9 @@ export class Main extends Phaser.State {
         if(this.placer == null){
             this.dialogs.powerTileClicked(powerTile, pointer);
         }else{
-            this.placer.clickCallback(powerTile, this.inventory);
+            this.placer.clickCallback(powerTile, this.inventory, this.facilities);
             this.game.input.deleteMoveCallback(this.placer.moveCallback, null);
+            this.placer = null;
         }
     }
 

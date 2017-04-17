@@ -1,4 +1,4 @@
-import {FacilityTypes} from "./Facilities";
+import {Facilities, FacilityTypes} from "./Facilities";
 import {Inventory} from "./Inventory";
 
 interface SimplePoint{
@@ -115,19 +115,20 @@ export class LinePlacer{
         }
     }
 
-    clickCallback(powerTile: Phaser.Tile, inventory: Inventory) {
+    clickCallback(powerTile: Phaser.Tile, inventory: Inventory, facilities: Facilities) {
         this.clearAndRedrawTemp(powerTile);
         this.clearTempLayer();
-        this.purchase(inventory);
+        this.purchase(inventory, facilities);
     }
 
-    private purchase(inventory: Inventory) {
+    private purchase(inventory: Inventory, facilities: Facilities) {
         let cost = this.coords.length;
-        if(inventory.enoughDollars(cost)){
+        if(inventory.enoughDollars(cost) && facilities.areConnectable(this.source, this.destination)){
             inventory.deductDollars(cost);
             for(let coord of this.coords){
                 this.map.putTile(FacilityTypes.PowerLine, coord.x, coord.y, LinePlacer.POWER_LAYER);
             }
+            facilities.addLine(this.source, this.destination);
         }
     }
 }
