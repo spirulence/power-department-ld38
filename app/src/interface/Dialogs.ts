@@ -1,21 +1,19 @@
 import {ContextDialog} from "./ContextDialog";
+import {FacilityTypes} from "../mainstate/Facilities";
 
-export const enum PowerTiles {
-    Nothing = -1,
-    Plant = 5,
-    Substation = 6
-}
 
 export const enum DialogButtons {
-    NewSubstation = 4,
+    NewTransmissionLine = 0,
     NewPlant = 2,
-    NewTransmissionLine = 6,
-    AddDistributionNetwork = 0
+    NewSubstation = 4,
+    AddDistributionNetwork = 6
 }
+
+export type TileAction = (tile: Phaser.Tile)=>void;
 
 export interface DialogAction {
     image: number;
-    callback: (tile: Phaser.Tile)=>void;
+    callback: TileAction;
 }
 
 export class Dialogs{
@@ -23,9 +21,13 @@ export class Dialogs{
     game: Phaser.Game;
     actions: DialogAction[];
 
-    constructor(game: Phaser.Game, actions: DialogAction[]){
+    constructor(game: Phaser.Game){
         this.game = game;
-        this.actions = actions;
+        this.actions = [];
+    }
+
+    addAction(button: DialogButtons, action: TileAction){
+        this.actions.push({image: button, callback: action});
     }
 
     powerTileClicked(tile: Phaser.Tile, pointer: Phaser.Pointer){
@@ -36,7 +38,7 @@ export class Dialogs{
 
     private createDialog(tile: Phaser.Tile): ContextDialog {
         switch (tile.index) {
-            case PowerTiles.Substation:
+            case FacilityTypes.Substation:
                 return this.createNewSubstationDialog(tile);
             default:
                 return this.createNewBuildingDialog(tile);

@@ -1,17 +1,22 @@
 import {Dialogs, DialogButtons} from "../interface/Dialogs";
 import {Facilities} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
+import {LinePlacer} from "../mainstate/LinePlacer";
 
 export class Main extends Phaser.State {
     map: Phaser.Tilemap;
     facilities: Facilities;
     dialogs: Dialogs;
     inventory: Inventory;
+
     private belowText: Phaser.Text;
+    private placer: LinePlacer;
 
     create() {
         this.setupMap();
+
         this.facilities = new Facilities(this.map);
+
         this.setupDialogs();
 
         let textStyle = {font:"20px monospace", fill:"#fff"};
@@ -21,8 +26,7 @@ export class Main extends Phaser.State {
         this.inventory = new Inventory();
         this.facilities.setInventory(this.inventory);
         this.inventory.addNotifier(function(inv: Inventory){
-            let dollars = inv.dollarsMillions;
-            belowText.text = `$${dollars}m`;
+            belowText.text = `$${inv.dollarsMillions}m`;
         });
         this.inventory.notify();
     }
@@ -41,11 +45,23 @@ export class Main extends Phaser.State {
     }
 
     private setupDialogs() {
-        this.dialogs = new Dialogs(this.game,
-            [
-                {image: DialogButtons.NewSubstation, callback: this.facilities.addSubstation.bind(this.facilities)},
-                {image: DialogButtons.NewPlant, callback: this.facilities.addPlant.bind(this.facilities)}
-            ]);
+        this.dialogs = new Dialogs(this.game);
+
+        let addSubstation = this.facilities.addSubstation.bind(this.facilities);
+        this.dialogs.addAction(DialogButtons.NewSubstation, addSubstation);
+
+        let addPlant = this.facilities.addPlant.bind(this.facilities);
+        this.dialogs.addAction(DialogButtons.NewPlant, addPlant);
+
+        let map = this.map;
+        let game = this.game;
+        let mainstate = this;
+        let newTransmissionLine = function(tile: Phaser.Tile){
+            let placer = new LinePlacer(map, tile);
+            game.input.addMoveCallback(placer.moveCallback, null);
+            mainstate.placer = placer;
+        };
+        this.dialogs.addAction(DialogButtons.NewTransmissionLine, newTransmissionLine);
     }
 
     private clickBaseLayer(_mapLayer: Phaser.TilemapLayer, pointer: Phaser.Pointer){
@@ -53,7 +69,12 @@ export class Main extends Phaser.State {
             pointer.position.x, pointer.position.y,
             undefined, undefined, "power", true);
 
-        this.dialogs.powerTileClicked(powerTile, pointer);
+        if(this.placer == null){
+            this.dialogs.powerTileClicked(powerTile, pointer);
+        }else{
+            this.placer.clickCallback(powerTile, this.inventory);
+            this.game.input.deleteMoveCallback(this.placer.moveCallback, null);
+        }
     }
 
     update() {

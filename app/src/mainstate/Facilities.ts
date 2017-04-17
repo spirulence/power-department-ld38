@@ -1,5 +1,12 @@
 import {Inventory} from "./Inventory";
 
+export enum FacilityTypes{
+    Nothing = -1,
+    Plant = 5,
+    Substation = 6,
+    PowerLine = 7
+}
+
 export class Facilities{
     private map: Phaser.Tilemap;
     private inventory: Inventory;
