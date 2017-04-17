@@ -2,6 +2,7 @@ import {Dialogs, DialogButtons} from "../interface/Dialogs";
 import {Facilities} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
+import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 
 export class Main extends Phaser.State {
     map: Phaser.Tilemap;
@@ -14,21 +15,30 @@ export class Main extends Phaser.State {
 
     create() {
         this.setupMap();
-
-        this.facilities = new Facilities(this.map);
-
+        this.setupFacilities();
         this.setupDialogs();
+        this.setupText();
+        this.setupInventory();
+        this.setupHover();
+    }
 
-        let textStyle = {font:"20px monospace", fill:"#fff"};
-        this.belowText = this.add.text(0, 600, "", textStyle);
-        let belowText = this.belowText;
+    private setupFacilities() {
+        this.facilities = new Facilities(this.map);
+    }
 
+    private setupInventory() {
         this.inventory = new Inventory();
         this.facilities.setInventory(this.inventory);
-        this.inventory.addNotifier(function(inv: Inventory){
+        let belowText = this.belowText;
+        this.inventory.addNotifier(function (inv: Inventory) {
             belowText.text = `$${inv.dollarsMillions}m`;
         });
         this.inventory.notify();
+    }
+
+    private setupText() {
+        let textStyle = {font: "20px monospace", fill: "#fff"};
+        this.belowText = this.add.text(0, 600, "", textStyle);
     }
 
     private setupMap() {
@@ -80,5 +90,12 @@ export class Main extends Phaser.State {
 
     update() {
 
+    }
+
+    private setupHover() {
+        let highlighter = new NetworkHighlighter();
+        highlighter.facilities = this.facilities;
+        highlighter.map = this.map;
+        this.game.input.addMoveCallback(highlighter.highlightHover, highlighter);
     }
 }

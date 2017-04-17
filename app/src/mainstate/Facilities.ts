@@ -18,71 +18,103 @@ interface SimplePoint {
     y: number
 }
 
-// type SubstationCoverage = SimplePoint[];
+export type SubstationCoverage = SimplePoint[];
 
 //@formatter:off
-// let substationCoverageLevels: SubstationCoverage[] = [
-//     [
-//         {x:-1, y:1},  {x:0,y:1},  {x:1,y:1},
-//         {x:-1, y:0},  {x:0,y:0},  {x:1,y:0},
-//         {x:-1, y:-1}, {x:0,y:-1}, {x:1,y:-1}
-//     ],
-//     [
-//                       {x:-1, y:2},  {x:0,y:2},  {x:1,y:2},
-//         {x:-2, y:1},  {x:-1, y:1},  {x:0,y:1},  {x:1,y:1},  {x:2, y:1},
-//         {x:-2, y:0},  {x:-1, y:0},  {x:0,y:0},  {x:1,y:0},  {x:2, y:0},
-//         {x:-2, y:-1}, {x:-1, y:-1}, {x:0,y:-1}, {x:1,y:-1}, {x:2, y:-1},
-//                       {x:-1, y:-2}, {x:0,y:-2}, {x:1,y:-2},
-//     ],
-//     [
-//                                                   {x:0,y:3},
-//                                     {x:-1, y:2},  {x:0,y:2},  {x:1,y:2},
-//                       {x:-2, y:1},  {x:-1, y:1},  {x:0,y:1},  {x:1,y:1},  {x:2, y:1},
-//         {x:-3, y:0},  {x:-2, y:0},  {x:-1, y:0},  {x:0,y:0},  {x:1,y:0},  {x:2, y:0}, {x:3, y:0},
-//                       {x:-2, y:-1}, {x:-1, y:-1}, {x:0,y:-1}, {x:1,y:-1}, {x:2, y:-1},
-//                                     {x:-1, y:-2}, {x:0,y:-2}, {x:1,y:-2},
-//                                                   {x:0,y:-3}
-//     ]
-// ];
+export const SUBSTATION_LEVELS: SubstationCoverage[] = [
+    [
+        {x:-1, y:1},  {x:0,y:1},  {x:1,y:1},
+        {x:-1, y:0},  {x:0,y:0},  {x:1,y:0},
+        {x:-1, y:-1}, {x:0,y:-1}, {x:1,y:-1}
+    ],
+    [
+                      {x:-1, y:2},  {x:0,y:2},  {x:1,y:2},
+        {x:-2, y:1},  {x:-1, y:1},  {x:0,y:1},  {x:1,y:1},  {x:2, y:1},
+        {x:-2, y:0},  {x:-1, y:0},  {x:0,y:0},  {x:1,y:0},  {x:2, y:0},
+        {x:-2, y:-1}, {x:-1, y:-1}, {x:0,y:-1}, {x:1,y:-1}, {x:2, y:-1},
+                      {x:-1, y:-2}, {x:0,y:-2}, {x:1,y:-2},
+    ],
+    [
+                                                  {x:0,y:3},
+                                    {x:-1, y:2},  {x:0,y:2},  {x:1,y:2},
+                      {x:-2, y:1},  {x:-1, y:1},  {x:0,y:1},  {x:1,y:1},  {x:2, y:1},
+        {x:-3, y:0},  {x:-2, y:0},  {x:-1, y:0},  {x:0,y:0},  {x:1,y:0},  {x:2, y:0}, {x:3, y:0},
+                      {x:-2, y:-1}, {x:-1, y:-1}, {x:0,y:-1}, {x:1,y:-1}, {x:2, y:-1},
+                                    {x:-1, y:-2}, {x:0,y:-2}, {x:1,y:-2},
+                                                  {x:0,y:-3}
+    ]
+];
 //@formatter:on
+
+export interface SubNetwork {
+    substations: SimplePoint[];
+    plants: SimplePoint[];
+}
 
 class PowerNetwork {
     private graph: Graph;
 
-    private coordToVertex: { [id: string]: FacilityVertex } = {};
+    private coordToVertex: { [id: string]: FacilityVertex };
+    private vertexToCoord: { [id: number]: SimplePoint };
 
     constructor() {
         this.graph = new Graph();
         this.coordToVertex = {};
+        this.vertexToCoord = {};
     }
 
     addSubstation(coord: SimplePoint) {
         let vertex = this.graph.addVertex();
-        this.coordToVertex[PowerNetwork.hashCoord(coord)] = {vertex: vertex, facilityType: "substation"};
+        this.coordToVertex[PowerNetwork.hashCoordinate(coord)] = {vertex: vertex, facilityType: "substation"};
+        this.vertexToCoord[vertex] = coord;
     }
 
     addPlant(coord: SimplePoint) {
         let vertex = this.graph.addVertex();
-        this.coordToVertex[PowerNetwork.hashCoord(coord)] = {vertex: vertex, facilityType: "plant"};
+        this.coordToVertex[PowerNetwork.hashCoordinate(coord)] = {vertex: vertex, facilityType: "plant"};
+        this.vertexToCoord[vertex] = coord;
     }
 
     addLine(source: SimplePoint, destination: SimplePoint) {
-        let sourceVertex = this.coordToVertex[PowerNetwork.hashCoord(source)];
-        let destinationVertex = this.coordToVertex[PowerNetwork.hashCoord(destination)];
+        let sourceVertex = this.coordToVertex[PowerNetwork.hashCoordinate(source)];
+        let destinationVertex = this.coordToVertex[PowerNetwork.hashCoordinate(destination)];
         this.graph.addEdge(sourceVertex.vertex, destinationVertex.vertex);
     }
 
-    private static hashCoord(coord: SimplePoint) {
-        return coord.x.toString() + "-" + coord.y.toString();
+    private static hashCoordinate(coordinate: SimplePoint) {
+        return coordinate.x.toString() + "-" + coordinate.y.toString();
     }
 
     at(coord: SimplePoint) {
-        let result = this.coordToVertex[PowerNetwork.hashCoord(coord)];
+        let result = this.coordToVertex[PowerNetwork.hashCoordinate(coord)];
         if (result != null) {
-            return this.coordToVertex[PowerNetwork.hashCoord(coord)].facilityType;
+            return this.coordToVertex[PowerNetwork.hashCoordinate(coord)].facilityType;
         } else {
             return "";
         }
+    }
+
+    subnetworkAt(coord: SimplePoint) {
+        let vertex = this.coordToVertex[PowerNetwork.hashCoordinate(coord)].vertex;
+        let component = this.graph.components.wholeComponent(this.graph.components.component(vertex));
+
+        let result: SubNetwork = {substations: [], plants: []};
+        for (let connectedVertex of component) {
+            let connectedCoord = this.vertexToCoord[connectedVertex];
+            let facility = this.coordToVertex[PowerNetwork.hashCoordinate(connectedCoord)].facilityType;
+            switch (facility) {
+                case "substation":
+                    result.substations.push(connectedCoord);
+                    break;
+                case "plant":
+                    result.plants.push(connectedCoord);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return result;
     }
 }
 
@@ -90,7 +122,9 @@ class PowerNetwork {
 export class Facilities {
     private map: Phaser.Tilemap;
     private inventory: Inventory;
-    private powerNetwork: PowerNetwork;
+
+    powerNetwork: PowerNetwork;
+
 
     constructor(map: Phaser.Tilemap) {
         this.map = map;
