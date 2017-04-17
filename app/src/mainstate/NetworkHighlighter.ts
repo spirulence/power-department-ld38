@@ -32,6 +32,11 @@ export class NetworkHighlighter{
 
     highlightHover(_ptr: Phaser.Pointer, x: number, y: number, _isClick: boolean) {
         let tile = this._map.getTileWorldXY(x, y, undefined, undefined, NetworkHighlighter.TEMP_LAYER, true);
+        if(tile == null){
+            this.clearHighlights();
+            return
+        }
+
         let coord = {x: tile.x, y: tile.y};
 
         if(coord.x === this.lastHighlightPoint.x && coord.y === this.lastHighlightPoint.y){

@@ -3,6 +3,7 @@ import {Facilities} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
+import {Demand} from "../mainstate/Demand";
 
 export class Main extends Phaser.State {
     map: Phaser.Tilemap;
@@ -12,6 +13,8 @@ export class Main extends Phaser.State {
 
     private belowText: Phaser.Text;
     private placer: LinePlacer;
+    private demand: Demand;
+    private demandText: Phaser.Text;
 
     create() {
         this.setupMap();
@@ -19,6 +22,7 @@ export class Main extends Phaser.State {
         this.setupDialogs();
         this.setupText();
         this.setupInventory();
+        this.setupDemand();
         this.setupHover();
     }
 
@@ -97,5 +101,25 @@ export class Main extends Phaser.State {
         highlighter.facilities = this.facilities;
         highlighter.map = this.map;
         this.game.input.addMoveCallback(highlighter.highlightHover, highlighter);
+    }
+
+    private setupDemand() {
+        this.demand = new Demand();
+        this.demand.map = this.map;
+        this.demand.facilities = this.facilities;
+
+        let textStyle = {font: "20px monospace", fill: "#fff", boundsAlignH: "right"};
+        this.demandText = this.add.text(0, 0, "", textStyle);
+        this.demandText.setTextBounds(0,600, 1000, 25);
+        let demandText = this.demandText;
+
+        let demand = this.demand;
+        this.facilities.addNotifier(function(_facilities: Facilities){
+            demand.calculateSatisfaction();
+            let sat = demand.satisfaction;
+            demandText.text = `${sat.unconnected}uncon-${sat.unreliable}unrel-${sat.reliable}rel`
+        });
+
+        this.facilities.notify();
     }
 }

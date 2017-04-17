@@ -51,7 +51,7 @@ export interface SubNetwork {
     plants: SimplePoint[];
 }
 
-class PowerNetwork {
+export class PowerNetwork {
     private graph: Graph;
 
     private coordToVertex: { [id: string]: FacilityVertex };
@@ -116,12 +116,25 @@ class PowerNetwork {
 
         return result;
     }
+
+    allSubnetworks(){
+        let subnetworks: SubNetwork[] = [];
+
+        for(let componentId = 0; componentId < this.graph.components.size(); componentId++){
+            let firstVertex = this.graph.components.wholeComponent(componentId)[0];
+            subnetworks.push(this.subnetworkAt(this.vertexToCoord[firstVertex]));
+        }
+
+        return subnetworks;
+    }
 }
 
+export type FacilitiesNotifier = (facilities: Facilities)=>void;
 
 export class Facilities {
     private map: Phaser.Tilemap;
     private inventory: Inventory;
+    private notifiers: FacilitiesNotifier[];
 
     powerNetwork: PowerNetwork;
 
@@ -129,6 +142,17 @@ export class Facilities {
     constructor(map: Phaser.Tilemap) {
         this.map = map;
         this.powerNetwork = new PowerNetwork();
+        this.notifiers = [];
+    }
+
+    addNotifier(callback: FacilitiesNotifier){
+        this.notifiers.push(callback);
+    }
+
+    notify() {
+        for (let callback of this.notifiers) {
+            callback(this);
+        }
     }
 
     addSubstation(baseTile: Phaser.Tile) {
@@ -138,6 +162,7 @@ export class Facilities {
             this.map.putTile(6, baseTile.x, baseTile.y, "power");
             this.inventory.deductDollars(2);
             this.powerNetwork.addSubstation(location);
+            this.notify();
         }
     }
 
@@ -148,6 +173,7 @@ export class Facilities {
             this.map.putTile(5, baseTile.x, baseTile.y, "power");
             this.inventory.deductDollars(5);
             this.powerNetwork.addPlant(location);
+            this.notify();
         }
     }
 
@@ -155,6 +181,7 @@ export class Facilities {
         let sourceCoord = {x: source.x, y: source.y};
         let destinationCoord = {x: destination.x, y: destination.y};
         this.powerNetwork.addLine(sourceCoord, destinationCoord);
+        this.notify();
     }
 
     setInventory(inventory: Inventory) {
@@ -169,5 +196,17 @@ export class Facilities {
         let destinationYes = destinationType == "substation" || destinationType == "plant";
 
         return sourceYes && destinationYes;
+    }
+
+    coverageArea(substation: SimplePoint){
+        let coverage: SimplePoint[] = [];
+
+        let coverageLevel = SUBSTATION_LEVELS[0];
+        for (let offset of coverageLevel) {
+            let covered: SimplePoint = {x: offset.x + substation.x, y: offset.y + substation.y};
+            coverage.push(covered);
+        }
+
+        return coverage;
     }
 }
