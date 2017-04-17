@@ -58,28 +58,28 @@ class PowerNetwork {
 
     addSubstation(coord: SimplePoint) {
         let vertex = this.graph.addVertex();
-        this.coordToVertex[this.hashCoord(coord)] = {vertex: vertex, facilityType: "substation"};
+        this.coordToVertex[PowerNetwork.hashCoord(coord)] = {vertex: vertex, facilityType: "substation"};
     }
 
     addPlant(coord: SimplePoint) {
         let vertex = this.graph.addVertex();
-        this.coordToVertex[this.hashCoord(coord)] = {vertex: vertex, facilityType: "plant"};
+        this.coordToVertex[PowerNetwork.hashCoord(coord)] = {vertex: vertex, facilityType: "plant"};
     }
 
     addLine(source: SimplePoint, destination: SimplePoint) {
-        let sourceVertex = this.coordToVertex[this.hashCoord(source)];
-        let destinationVertex = this.coordToVertex[this.hashCoord(destination)];
+        let sourceVertex = this.coordToVertex[PowerNetwork.hashCoord(source)];
+        let destinationVertex = this.coordToVertex[PowerNetwork.hashCoord(destination)];
         this.graph.addEdge(sourceVertex.vertex, destinationVertex.vertex);
     }
 
-    private hashCoord(coord: SimplePoint) {
+    private static hashCoord(coord: SimplePoint) {
         return coord.x.toString() + "-" + coord.y.toString();
     }
 
     at(coord: SimplePoint) {
-        let result = this.coordToVertex[this.hashCoord(coord)];
+        let result = this.coordToVertex[PowerNetwork.hashCoord(coord)];
         if (result != null) {
-            return this.coordToVertex[this.hashCoord(coord)].facilityType;
+            return this.coordToVertex[PowerNetwork.hashCoord(coord)].facilityType;
         } else {
             return "";
         }
