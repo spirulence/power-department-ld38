@@ -37,12 +37,13 @@ export class Demand{
         };
 
         for(let subNetwork of this._facilities.powerNetwork.allSubnetworks()){
-            let supply = this.calculateSupply(subNetwork);
+            let supply = Demand.calculateSupply(subNetwork);
+            let losses = Demand.calculateLosses(subNetwork);
             let connectedDemand = this.calculateConnectedDemand(subNetwork);
 
 
             if(supply !== 0){
-                if(supply < connectedDemand){
+                if( (supply - losses) < connectedDemand){
                     satisfaction.unreliable += connectedDemand;
                 }else {
                     satisfaction.reliable += connectedDemand;
@@ -55,7 +56,7 @@ export class Demand{
         this.satisfaction = satisfaction;
     }
 
-    private calculateSupply(subNetwork: SubNetwork) {
+    private static calculateSupply(subNetwork: SubNetwork) {
         return subNetwork.plants.length * 200;
     }
 
@@ -74,7 +75,7 @@ export class Demand{
     private calculateConnectedDemand(subNetwork: SubNetwork) {
         let demand = 0;
         for(let substation of subNetwork.substations){
-            for(let covered of this._facilities.coverageArea(substation)){
+            for(let covered of Facilities.coverageArea(substation)){
                 let tile = this._map.getTile(covered.x, covered.y, "base", true).index;
                 if(tile === Consumers.Residential){
                     demand += 5;
@@ -82,5 +83,15 @@ export class Demand{
             }
         }
         return demand;
+    }
+
+    private static calculateLosses(subNetwork: SubNetwork) {
+        let losses = 0;
+        for(let line of subNetwork.lines){
+            let lossX = Math.abs(line.from.x - line.to.x);
+            let lossY = Math.abs(line.from.y - line.to.y);
+            losses += Math.max(lossX, lossY);
+        }
+        return losses;
     }
 }

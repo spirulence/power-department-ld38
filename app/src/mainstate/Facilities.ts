@@ -46,9 +46,15 @@ export const SUBSTATION_LEVELS: SubstationCoverage[] = [
 ];
 //@formatter:on
 
+export interface PowerLine {
+    from: SimplePoint;
+    to: SimplePoint;
+}
+
 export interface SubNetwork {
     substations: SimplePoint[];
     plants: SimplePoint[];
+    lines: PowerLine[];
 }
 
 export class PowerNetwork {
@@ -98,7 +104,16 @@ export class PowerNetwork {
         let vertex = this.coordToVertex[PowerNetwork.hashCoordinate(coord)].vertex;
         let component = this.graph.components.wholeComponent(this.graph.components.component(vertex));
 
-        let result: SubNetwork = {substations: [], plants: []};
+        let lineStrings: { [index:string] : boolean } = {};
+        let hashEdge = function(vertex1: number, vertex2: number){
+            return Math.min(vertex1, vertex2).toString() + "-" + Math.max(vertex1, vertex2);
+        };
+        let unhashEdge = function(hash: string){
+            let splits = hash.split("-");
+            return {from: Number(splits[0]), to: Number(splits[1])};
+        };
+
+        let result: SubNetwork = {substations: [], plants: [], lines: []};
         for (let connectedVertex of component) {
             let connectedCoord = this.vertexToCoord[connectedVertex];
             let facility = this.coordToVertex[PowerNetwork.hashCoordinate(connectedCoord)].facilityType;
@@ -112,6 +127,15 @@ export class PowerNetwork {
                 default:
                     break;
             }
+
+            for(let peer of this.graph.adjacent(connectedVertex)){
+                lineStrings[hashEdge(connectedVertex, peer)] = true;
+            }
+        }
+
+        for(let hashed in lineStrings){
+            let vertices = unhashEdge(hashed);
+            result.lines.push({from: this.vertexToCoord[vertices.from], to: this.vertexToCoord[vertices.to]});
         }
 
         return result;
@@ -198,7 +222,7 @@ export class Facilities {
         return sourceYes && destinationYes;
     }
 
-    coverageArea(substation: SimplePoint){
+    static coverageArea(substation: SimplePoint){
         let coverage: SimplePoint[] = [];
 
         let coverageLevel = SUBSTATION_LEVELS[0];
