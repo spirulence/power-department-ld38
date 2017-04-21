@@ -8,6 +8,7 @@
     "build": "npm run assets && webpack -p",
     "dev-serve": "lite-server --baseDir=dist"
   },
+  "private": true,
   "author": {
     "name": "Geoffroy Warin"
   },

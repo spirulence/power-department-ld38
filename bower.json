@@ -1,0 +1,21 @@
+{
+  "name": "power-department-ld38",
+  "description": "A game about powering the people",
+  "main": "app/src/Game.ts",
+  "authors": [
+    "\"Cameron Seebach <pannewb@gmail.com>\""
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "slick-ui": "^0.4.4"
+  }
+}

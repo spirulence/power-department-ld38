@@ -1,9 +1,12 @@
+///<reference path="../defs/definitions.d.ts"/>
 import {Dialogs, DialogButtons} from "../interface/Dialogs";
 import {Facilities} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 import {Demand} from "../mainstate/Demand";
+
+
 
 export class Main extends Phaser.State {
     map: Phaser.Tilemap;
@@ -15,6 +18,11 @@ export class Main extends Phaser.State {
     private placer: LinePlacer;
     private demand: Demand;
     private demandText: Phaser.Text;
+    private slickUI: any;
+
+    init(slickUI: any){
+        this.slickUI = slickUI;
+    }
 
     create() {
         this.setupMap();
@@ -24,6 +32,14 @@ export class Main extends Phaser.State {
         this.setupInventory();
         this.setupDemand();
         this.setupHover();
+
+        let panel = new SlickUI.Element.Panel(8, 8, 150, this.game.height - 16);
+        this.slickUI.add(panel);
+
+        let button = new SlickUI.Element.Button(0,0, 140, 80);
+        panel.add(button);
+        button.events.onInputUp.add(function () {console.log('Clicked button');});
+        button.add(new SlickUI.Element.Text(0,0, "My button")).center();
     }
 
     private setupFacilities() {
