@@ -19,12 +19,16 @@ export class Main extends Phaser.State {
     private demand: Demand;
     private demandText: Phaser.Text;
     private slickUI: any;
+    private difficulty: string;
+    private music: Phaser.Sound;
 
-    init(slickUI: any){
+    init(slickUI: any, difficulty: string){
         this.slickUI = slickUI;
+        this.difficulty = difficulty;
     }
 
     create() {
+        this.setupMusic();
         this.setupMap();
         this.setupFacilities();
         this.setupDialogs();
@@ -32,14 +36,6 @@ export class Main extends Phaser.State {
         this.setupInventory();
         this.setupDemand();
         this.setupHover();
-
-        let panel = new SlickUI.Element.Panel(8, 8, 150, this.game.height - 16);
-        this.slickUI.add(panel);
-
-        let button = new SlickUI.Element.Button(0,0, 140, 80);
-        panel.add(button);
-        button.events.onInputUp.add(function () {console.log('Clicked button');});
-        button.add(new SlickUI.Element.Text(0,0, "My button")).center();
     }
 
     private setupFacilities() {
@@ -137,5 +133,10 @@ export class Main extends Phaser.State {
         });
 
         this.facilities.notify();
+    }
+
+    private setupMusic() {
+        this.music = this.add.audio("main_music_01");
+        this.music.loopFull(0.5);
     }
 }
