@@ -243,8 +243,13 @@ class LightningStrike implements RandomEvent{
 
     private pickRandomLine(): PowerLine {
         let networks = this.facilities.powerNetwork.allSubnetworks();
+        if(networks.length === 0){
+            return null;
+        }
         let network = networks[_.random(0, networks.length-1)];
-        console.log(network.lines.length);
+        if(network.lines.length === 0){
+            return null;
+        }
         return network.lines[_.random(0, network.lines.length-1)];
     }
 }
