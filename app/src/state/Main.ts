@@ -110,12 +110,14 @@ export class Main extends Phaser.State {
             pointer.position.x, pointer.position.y,
             undefined, undefined, "power", true);
 
-        if(this.placer == null){
-            this.dialogs.powerTileClicked(powerTile, pointer);
-        }else{
-            this.placer.clickCallback(powerTile, this.inventory, this.facilities);
-            this.game.input.deleteMoveCallback(this.placer.moveCallback, null);
-            this.placer = null;
+        if(this.nextQuarterButton.visible === true) {
+            if (this.placer == null) {
+                this.dialogs.powerTileClicked(powerTile, pointer);
+            } else {
+                this.placer.clickCallback(powerTile, this.inventory, this.facilities);
+                this.game.input.deleteMoveCallback(this.placer.moveCallback, null);
+                this.placer = null;
+            }
         }
     }
 
@@ -164,7 +166,7 @@ export class Main extends Phaser.State {
 
         let happiness = new SlickUI.Element.Button(500, 600, 150, 25);
         this.slickUI.add(happiness);
-        happiness.add(new SlickUI.Element.Text(0, 0, "Happiness")).center();
+        happiness.add(new SlickUI.Element.Text(0, 0, "Last Report")).center();
     }
 
     private advanceQuarter() {
@@ -179,6 +181,10 @@ export class Main extends Phaser.State {
         events.forEach(function(event){
             descriptions.push(event.getDescription());
         });
+
+        if(descriptions.length === 0){
+            descriptions.push("Nothing particularly notable happened.");
+        }
 
         let panel = new SlickUI.Element.Panel(50, 50, 900, 500);
         this.slickUI.add(panel);
@@ -236,7 +242,7 @@ class LightningStrike implements RandomEvent{
     }
 
     getDescription(): string {
-        let description = "Lightning struck near a substation, but had no effect.";
+        let description = "Lightning struck nearby, but had no effect.";
         if(this.line != null) {
             description = "Lightning struck and destroyed a line.";
             if (this.outage) {
