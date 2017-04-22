@@ -1,5 +1,7 @@
 import {Inventory} from "./Inventory";
 import {Graph} from "../utils/Graph";
+import {bresenhamLine} from "./LinePlacer";
+import * as _ from "lodash";
 
 export enum FacilityTypes{
     Nothing = -1,
@@ -87,7 +89,13 @@ export class PowerNetwork {
         this.graph.addEdge(sourceVertex.vertex, destinationVertex.vertex);
     }
 
-    private static hashCoordinate(coordinate: SimplePoint) {
+    deleteLine(source: SimplePoint, destination: SimplePoint){
+        let sourceVertex = this.coordToVertex[PowerNetwork.hashCoordinate(source)];
+        let destinationVertex = this.coordToVertex[PowerNetwork.hashCoordinate(destination)];
+        this.graph.removeEdge(sourceVertex.vertex, destinationVertex.vertex);
+    }
+
+    static hashCoordinate(coordinate: SimplePoint) {
         return coordinate.x.toString() + "-" + coordinate.y.toString();
     }
 
@@ -157,16 +165,20 @@ export type FacilitiesNotifier = (facilities: Facilities)=>void;
 
 export class Facilities {
     private map: Phaser.Tilemap;
+    private lineCoords: {[id: string]: PowerLine[]};
     private inventory: Inventory;
     private notifiers: FacilitiesNotifier[];
 
     powerNetwork: PowerNetwork;
+
+    private static readonly POWER_LAYER = "power";
 
 
     constructor(map: Phaser.Tilemap) {
         this.map = map;
         this.powerNetwork = new PowerNetwork();
         this.notifiers = [];
+        this.lineCoords = {};
     }
 
     addNotifier(callback: FacilitiesNotifier){
@@ -201,11 +213,46 @@ export class Facilities {
         }
     }
 
-    addLine(source: Phaser.Tile, destination: Phaser.Tile) {
+    addLine(source: Phaser.Tile, destination: Phaser.Tile, coords: SimplePoint[]) {
         let sourceCoord = {x: source.x, y: source.y};
         let destinationCoord = {x: destination.x, y: destination.y};
+
+        for(let coord of coords) {
+            let hash = PowerNetwork.hashCoordinate(coord);
+            if(this.lineCoords[hash] == null){
+                this.lineCoords[hash] = [];
+            }
+            this.lineCoords[hash].push({from: sourceCoord, to: destinationCoord});
+        }
+
         this.powerNetwork.addLine(sourceCoord, destinationCoord);
         this.notify();
+    }
+
+    deleteLine(line: PowerLine){
+        this.powerNetwork.deleteLine(line.from, line.to);
+
+        let coords: SimplePoint[] = [];
+        bresenhamLine(line.from.x, line.from.y, line.to.x, line.to.y, function(x: number, y:number):void{
+            coords.push({x:x, y:y});
+        });
+
+        for (let coord of coords) {
+            if(this.powerLineAt(coord)){
+                let lineCoords: PowerLine[] = this.removeAndUpdateLineCoords(line, coord);
+                if(lineCoords.length === 0) {
+                    this.clearCoord(coord);
+                }
+            }
+        }
+    }
+
+    private clearCoord(coord: SimplePoint) {
+        this.map.putTile(null, coord.x, coord.y, Facilities.POWER_LAYER);
+    }
+
+    private powerLineAt(coord: SimplePoint) {
+        return this.map.getTile(coord.x, coord.y, Facilities.POWER_LAYER, true).index === FacilityTypes.PowerLine;
     }
 
     setInventory(inventory: Inventory) {
@@ -232,5 +279,14 @@ export class Facilities {
         }
 
         return coverage;
+    }
+
+    private removeAndUpdateLineCoords(line: PowerLine, coord: SimplePoint) {
+        let hash = PowerNetwork.hashCoordinate(coord);
+        let lineReverse = {from: line.to, to: line.from};
+        this.lineCoords[hash] = this.lineCoords[hash].filter(function(someLine: PowerLine){
+            return !(_.isEqual(someLine, line) || _.isEqual(someLine, lineReverse));
+        });
+        return this.lineCoords[hash];
     }
 }
