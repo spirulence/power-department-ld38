@@ -1,10 +1,11 @@
 ///<reference path="../defs/definitions.d.ts"/>
 import {Dialogs, DialogButtons} from "../interface/Dialogs";
-import {Facilities} from "../mainstate/Facilities";
+import {Facilities, PowerLine} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 import {Demand} from "../mainstate/Demand";
+import * as _ from "lodash";
 
 
 
@@ -168,7 +169,7 @@ export class Main extends Phaser.State {
         this.quarter += 1;
         this.quarterText.text = `Quarter ${this.quarter}`;
 
-        //generate list of random events
+        this.generateEvents();
         //display panel with said list
     }
 
@@ -178,4 +179,82 @@ export class Main extends Phaser.State {
         this.quarterText = this.add.text(0, 0, `Quarter ${this.quarter}`, textStyle);
         this.quarterText.setTextBounds(150,600, 200, 25);
     }
+
+    private generateEvents() {
+        let events: RandomEvent[] = [];
+
+        let chance = Math.random();
+        if(chance > 0.50){
+            events.push(new LightningStrike(this.facilities, this.demand));
+        }
+
+        for(let event of events){
+            event.apply();
+            console.log(event.getDescription());
+        }
+    }
 }
+
+interface RandomEvent{
+
+    getDescription(): string;
+
+    apply(): void;
+}
+
+class LightningStrike implements RandomEvent{
+    private outage: boolean = false;
+    private line: PowerLine;
+    private demand: Demand;
+    private facilities: Facilities;
+
+    constructor(facilities: Facilities, demand: Demand){
+        this.facilities = facilities;
+        this.line = this.pickRandomLine();
+        this.demand = demand;
+    }
+
+    getDescription(): string {
+        let description = "Lightning struck near a substation, but had no effect.";
+        if(this.line != null) {
+            description = "Lightning struck and destroyed a line.";
+            if (this.outage) {
+                description += " An outage resulted.";
+            }
+        }
+        return description;
+    }
+
+    apply(): void {
+        if(this.line != null) {
+            this.demand.calculateSatisfaction();
+            let satisfactionBefore = this.demand.satisfaction;
+
+            this.facilities.deleteLine(this.line);
+
+            this.demand.calculateSatisfaction();
+            let satisfactionAfter = this.demand.satisfaction;
+
+            if (satisfactionAfter.unconnected > satisfactionBefore.unconnected) {
+                this.outage = true;
+            }
+        }
+    }
+
+    private pickRandomLine(): PowerLine {
+        let networks = this.facilities.powerNetwork.allSubnetworks();
+        let network = networks[_.random(0, networks.length-1)];
+        console.log(network.lines.length);
+        return network.lines[_.random(0, network.lines.length-1)];
+    }
+}
+
+// class TransformerExplosion implements RandomEvent{
+//
+// }
+//
+// class TreeFall implements RandomEvent{
+//
+// }
+
+
