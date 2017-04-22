@@ -24,6 +24,7 @@ export class Main extends Phaser.State {
     private music: Phaser.Sound;
     private quarter: number;
     private quarterText: Phaser.Text;
+    private nextQuarterButton: SlickUI.Element.Button;
 
     init(slickUI: any, difficulty: string){
         this.slickUI = slickUI;
@@ -159,6 +160,7 @@ export class Main extends Phaser.State {
         this.slickUI.add(nextQuarter);
         nextQuarter.add(new SlickUI.Element.Text(0, 0, "Next Quarter")).center();
         nextQuarter.events.onInputUp.add(this.advanceQuarter, this);
+        this.nextQuarterButton = nextQuarter;
 
         let happiness = new SlickUI.Element.Button(500, 600, 150, 25);
         this.slickUI.add(happiness);
@@ -166,11 +168,29 @@ export class Main extends Phaser.State {
     }
 
     private advanceQuarter() {
+        this.nextQuarterButton.visible = false;
+        let nextQuarterButton = this.nextQuarterButton;
+
         this.quarter += 1;
         this.quarterText.text = `Quarter ${this.quarter}`;
 
-        this.generateEvents();
-        //display panel with said list
+        let events = this.generateEvents();
+        let descriptions: string[] = [];
+        events.forEach(function(event){
+            descriptions.push(event.getDescription());
+        });
+
+        let panel = new SlickUI.Element.Panel(50, 50, 900, 500);
+        this.slickUI.add(panel);
+        panel.add(new SlickUI.Element.Text(0, 0, _.join(descriptions, "\n"))).centerHorizontally();
+        let okButton = new SlickUI.Element.Button(425, 445, 50, 30);
+        panel.add(okButton);
+        okButton.add(new SlickUI.Element.Text(0,0,"OK")).center();
+
+        okButton.events.onInputUp.add(function(){
+            panel.container.displayGroup.destroy(true);
+            nextQuarterButton.visible = true;
+        }, this);
     }
 
     private setupQuarterCounter() {
@@ -190,8 +210,9 @@ export class Main extends Phaser.State {
 
         for(let event of events){
             event.apply();
-            console.log(event.getDescription());
         }
+
+        return events;
     }
 }
 

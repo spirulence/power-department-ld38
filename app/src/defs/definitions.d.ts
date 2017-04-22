@@ -7,12 +7,11 @@ declare namespace SlickUI{
     class Element {
         events: Phaser.Events;
         container: SlickUI.Container;
+        visible: boolean;
 
         constructor(x: number, y:number, width: number, height: number);
 
-        add(element: Element): Element;
-
-        center(): void;
+        add<T extends Element>(element: T): T;
     }
     namespace Element{
         export class Panel extends Element{
@@ -24,6 +23,8 @@ declare namespace SlickUI{
         export class Text extends Element{
             value: string;
             constructor(x: number, y: number, text: string);
+            center(): void;
+            centerHorizontally(): void;
         }
     }
 }
