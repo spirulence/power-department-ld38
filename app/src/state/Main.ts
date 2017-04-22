@@ -21,6 +21,8 @@ export class Main extends Phaser.State {
     private slickUI: any;
     private difficulty: string;
     private music: Phaser.Sound;
+    private quarter: number;
+    private quarterText: Phaser.Text;
 
     init(slickUI: any, difficulty: string){
         this.slickUI = slickUI;
@@ -28,6 +30,9 @@ export class Main extends Phaser.State {
     }
 
     create() {
+
+        this.setupQuarterCounter();
+
         this.setupMusic();
         this.setupMap();
         this.setupFacilities();
@@ -36,6 +41,7 @@ export class Main extends Phaser.State {
         this.setupInventory();
         this.setupDemand();
         this.setupHover();
+        this.setupUI();
     }
 
     private setupFacilities() {
@@ -43,7 +49,14 @@ export class Main extends Phaser.State {
     }
 
     private setupInventory() {
-        this.inventory = new Inventory();
+        let money = 250;
+        if(this.difficulty == "medium"){
+            money = 125;
+        }else if(this.difficulty == "hard"){
+            money = 50;
+        }
+
+        this.inventory = new Inventory(money);
         this.facilities.setInventory(this.inventory);
         let belowText = this.belowText;
         this.inventory.addNotifier(function (inv: Inventory) {
@@ -137,6 +150,30 @@ export class Main extends Phaser.State {
 
     private setupMusic() {
         this.music = this.add.audio("main_music_01");
-        this.music.loopFull(0.5);
+        this.music.loopFull(0.1);
+    }
+
+    private setupUI() {
+        let nextQuarter = new SlickUI.Element.Button(350, 600, 150, 25);
+        this.slickUI.add(nextQuarter);
+        nextQuarter.add(new SlickUI.Element.Text(0, 0, "Next Quarter")).center();
+        nextQuarter.events.onInputUp.add(this.advanceQuarter, this);
+
+        let happiness = new SlickUI.Element.Button(500, 600, 150, 25);
+        this.slickUI.add(happiness);
+        happiness.add(new SlickUI.Element.Text(0, 0, "Happiness")).center();
+    }
+
+    private advanceQuarter() {
+        //update quarter counter
+        //generate list of random events
+        //display panel with said list
+    }
+
+    private setupQuarterCounter() {
+        this.quarter = 0;
+        let textStyle = {font: "20px monospace", fill: "#fff", };
+        this.quarterText = this.add.text(0, 0, `Quarter ${this.quarter}`, textStyle);
+        this.quarterText.setTextBounds(150,600, 200, 25);
     }
 }

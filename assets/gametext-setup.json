@@ -61,6 +61,6 @@
     "friendlyName": "Next",
     "text": "",
     "specials": ["start-game"],
-    "next": null
+    "next": []
   }
 }

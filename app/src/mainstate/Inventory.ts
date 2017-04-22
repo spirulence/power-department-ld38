@@ -4,8 +4,8 @@ export class Inventory{
     dollarsMillions: number;
     notifiers: InventoryNotifier[];
 
-    constructor(){
-        this.dollarsMillions = 50;
+    constructor(money: number){
+        this.dollarsMillions = money;
         this.notifiers = [];
     }
 
