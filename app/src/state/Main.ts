@@ -25,6 +25,9 @@ export class Main extends Phaser.State {
     private quarter: number;
     private quarterText: Phaser.Text;
     private nextQuarterButton: SlickUI.Element.Button;
+    private lastReportButton: SlickUI.Element.Button;
+    private happiness: number;
+    private happinessHistory: number[];
 
     init(slickUI: any, difficulty: string){
         this.slickUI = slickUI;
@@ -32,7 +35,7 @@ export class Main extends Phaser.State {
     }
 
     create() {
-
+        this.setupHappiness();
         this.setupQuarterCounter();
 
         this.setupMusic();
@@ -164,12 +167,19 @@ export class Main extends Phaser.State {
         nextQuarter.events.onInputUp.add(this.advanceQuarter, this);
         this.nextQuarterButton = nextQuarter;
 
-        let happiness = new SlickUI.Element.Button(500, 600, 150, 25);
-        this.slickUI.add(happiness);
-        happiness.add(new SlickUI.Element.Text(0, 0, "Last Report")).center();
+        let lastReportButton = new SlickUI.Element.Button(500, 600, 150, 25);
+        this.slickUI.add(lastReportButton);
+        lastReportButton.add(new SlickUI.Element.Text(0, 0, "Last Report")).center();
+        this.lastReportButton = lastReportButton;
     }
 
     private advanceQuarter() {
+        let gameOver = this.updateHappiness();
+
+        if(gameOver){
+            return;
+        }
+
         this.nextQuarterButton.visible = false;
         let nextQuarterButton = this.nextQuarterButton;
 
@@ -186,9 +196,13 @@ export class Main extends Phaser.State {
             descriptions.push("Nothing particularly notable happened.");
         }
 
-        let panel = new SlickUI.Element.Panel(50, 50, 900, 500);
+        descriptions.push("");
+        descriptions.push("");
+        descriptions.push(this.getHappinessString());
+
+        let panel = new SlickUI.Element.Panel(250, 50, 500, 500);
         this.slickUI.add(panel);
-        panel.add(new SlickUI.Element.Text(0, 0, _.join(descriptions, "\n"))).centerHorizontally();
+        panel.add(new SlickUI.Element.Text(5, 0, _.join(descriptions, "\n")));
         let okButton = new SlickUI.Element.Button(425, 445, 50, 30);
         panel.add(okButton);
         okButton.add(new SlickUI.Element.Text(0,0,"OK")).center();
@@ -219,6 +233,53 @@ export class Main extends Phaser.State {
         }
 
         return events;
+    }
+
+    private setupHappiness() {
+        this.happiness = 50.0;
+        this.happinessHistory = [];
+    }
+
+    private getHappinessString() {
+        if(this.happiness > 80.0){
+            return "The people are ecstatic about your performance.";
+        }else if(this.happiness > 60.0){
+            return "The people think your performance is good.";
+        }else if(this.happiness > 40.0){
+            return "The people feel neutral about your performance.";
+        }else if(this.happiness > 20.0){
+            return "The people feel your performance is not up to par.";
+        }
+        return "Your performance is abysmal.";
+    }
+
+    private updateHappiness() {
+        this.happiness = this.happiness * 0.75 + 35.0 * 0.25;
+        this.happinessHistory.push(this.happiness);
+        if(this.happinessHistory.length > 5){
+            this.happinessHistory.shift();
+        }
+
+        let sum = this.happinessHistory.reduce(function(a, b){return a+b});
+        let average = sum / this.happinessHistory.length;
+        if(average < 38.0){
+            this.gameOver("People were unhappy with you for too long.");
+            return true;
+        }
+
+        return false;
+    }
+
+    private gameOver(reason: string) {
+        this.nextQuarterButton.container.displayGroup.destroy(true);
+        this.lastReportButton.container.displayGroup.destroy(true);
+        this.belowText.destroy(true);
+        this.music.destroy();
+        this.demandText.destroy(true);
+        this.quarterText.destroy(true);
+
+
+        this.game.state.start("game_over", false, false, this.slickUI, reason);
     }
 }
 
