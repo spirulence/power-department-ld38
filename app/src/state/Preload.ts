@@ -13,9 +13,18 @@ export class Preload extends Phaser.State {
 
         this.slickUI = this.game.plugins.add(Phaser.Plugin.SlickUI);
         this.slickUI.load("assets/kenney-theme/kenney.json");
+
+        this.load.audio("main_menu_music", "assets/power_main_menu_01.mp3");
+        this.load.image("logo", "assets/logo.png");
+
+        this.load.json("setup_text", "assets/gametext-setup.json");
+        this.load.audio("setup_music", "assets/power_department_setup.mp3");
+
+        this.load.audio("main_music_01", "assets/power_department_01.mp3");
     }
 
     create() {
-        this.game.state.start('main', false, false, this.slickUI);
+        this.preloadBar.destroy();
+        this.game.state.start('main_menu', false, false, this.slickUI);
     }
 }
