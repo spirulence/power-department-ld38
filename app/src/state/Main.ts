@@ -165,7 +165,9 @@ export class Main extends Phaser.State {
     }
 
     private advanceQuarter() {
-        //update quarter counter
+        this.quarter += 1;
+        this.quarterText.text = `Quarter ${this.quarter}`;
+
         //generate list of random events
         //display panel with said list
     }
