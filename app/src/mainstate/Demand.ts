@@ -21,7 +21,7 @@ export class Demand{
 
     private _map: Phaser.Tilemap;
     private _facilities: Facilities;
-    private totalDemand: number;
+    totalDemand: number;
 
     satisfaction: Satisfaction;
 

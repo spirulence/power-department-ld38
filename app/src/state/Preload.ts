@@ -23,6 +23,7 @@ export class Preload extends Phaser.State {
         this.load.audio("main_music_01", "assets/power_department_01.mp3");
 
         this.load.image("game_over", "assets/game_over.png");
+        this.load.image("you_win", "assets/you_win.png");
     }
 
     create() {
