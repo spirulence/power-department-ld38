@@ -30,6 +30,7 @@ export class Main extends Phaser.State {
     private happinessHistory: number[];
     private satisfactionHistory: Satisfaction[];
     private lastEvents: RandomEvent[];
+    private active: boolean;
 
     init(slickUI: any, difficulty: string){
         this.slickUI = slickUI;
@@ -37,6 +38,8 @@ export class Main extends Phaser.State {
     }
 
     create() {
+        this.active = true;
+
         this.setupQuarterCounter();
 
         this.setupMusic();
@@ -115,7 +118,7 @@ export class Main extends Phaser.State {
             pointer.position.x, pointer.position.y,
             undefined, undefined, "power", true);
 
-        if(this.nextQuarterButton.visible === true) {
+        if(this.nextQuarterButton.visible === true && this.active) {
             if (this.placer == null) {
                 this.dialogs.powerTileClicked(powerTile, pointer);
             } else {
@@ -124,6 +127,10 @@ export class Main extends Phaser.State {
                 this.placer = null;
             }
         }
+    }
+
+    shutdown(){
+        this.active = false;
     }
 
     update() {
@@ -176,6 +183,9 @@ export class Main extends Phaser.State {
     }
 
     private advanceQuarter() {
+        this.generateRevenue();
+
+
         if(this.gameIsWon()){
             this.gameWon();
         }
@@ -333,6 +343,10 @@ export class Main extends Phaser.State {
         this.teardown();
 
         this.game.state.start("game_won", false, false, this.slickUI);
+    }
+
+    private generateRevenue() {
+
     }
 }
 
