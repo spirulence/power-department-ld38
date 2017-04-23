@@ -3,6 +3,7 @@
 import {Boot, Preload, Main, Menu} from './state/States';
 import {GameSetup} from "./state/GameSetup";
 import {GameOver} from "./state/GameOver";
+import {GameWin} from "./state/GameWin";
 
 class Game extends Phaser.Game {
     constructor() {
@@ -19,6 +20,7 @@ class Game extends Phaser.Game {
         this.state.add('setup', GameSetup);
         this.state.add('main', Main);
         this.state.add('game_over', GameOver);
+        this.state.add('game_won', GameWin);
 
         this.state.start('boot');
     }

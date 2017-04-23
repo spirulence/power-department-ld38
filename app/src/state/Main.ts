@@ -4,7 +4,7 @@ import {Facilities, PowerLine} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
-import {Demand} from "../mainstate/Demand";
+import {Demand, Satisfaction} from "../mainstate/Demand";
 import * as _ from "lodash";
 
 
@@ -28,6 +28,8 @@ export class Main extends Phaser.State {
     private lastReportButton: SlickUI.Element.Button;
     private happiness: number;
     private happinessHistory: number[];
+    private satisfactionHistory: Satisfaction[];
+    private lastEvents: RandomEvent[];
 
     init(slickUI: any, difficulty: string){
         this.slickUI = slickUI;
@@ -35,7 +37,6 @@ export class Main extends Phaser.State {
     }
 
     create() {
-        this.setupHappiness();
         this.setupQuarterCounter();
 
         this.setupMusic();
@@ -47,6 +48,7 @@ export class Main extends Phaser.State {
         this.setupDemand();
         this.setupHover();
         this.setupUI();
+        this.setupHappiness();
     }
 
     private setupFacilities() {
@@ -54,7 +56,7 @@ export class Main extends Phaser.State {
     }
 
     private setupInventory() {
-        let money = 250;
+        let money = 500;
         if(this.difficulty == "medium"){
             money = 125;
         }else if(this.difficulty == "hard"){
@@ -174,6 +176,10 @@ export class Main extends Phaser.State {
     }
 
     private advanceQuarter() {
+        if(this.gameIsWon()){
+            this.gameWon();
+        }
+
         let gameOver = this.updateHappiness();
 
         if(gameOver){
@@ -191,6 +197,7 @@ export class Main extends Phaser.State {
         events.forEach(function(event){
             descriptions.push(event.getDescription());
         });
+        this.lastEvents = events;
 
         if(descriptions.length === 0){
             descriptions.push("Nothing particularly notable happened.");
@@ -238,6 +245,10 @@ export class Main extends Phaser.State {
     private setupHappiness() {
         this.happiness = 50.0;
         this.happinessHistory = [];
+
+        this.satisfactionHistory = [];
+        this.satisfactionHistory.push(this.demand.satisfaction);
+        this.lastEvents = [];
     }
 
     private getHappinessString() {
@@ -254,6 +265,28 @@ export class Main extends Phaser.State {
     }
 
     private updateHappiness() {
+        this.demand.calculateSatisfaction();
+        this.satisfactionHistory.push(this.demand.satisfaction);
+
+        if(this.satisfactionHistory.length > 3){
+            this.satisfactionHistory.shift();
+        }
+
+        let unconnectedSum = 0;
+        for(let satisfaction of this.satisfactionHistory){
+            unconnectedSum += satisfaction.unconnected;
+        }
+        let unconnectedAverage = unconnectedSum/this.satisfactionHistory.length;
+        if(this.demand.satisfaction.unconnected < unconnectedAverage){
+            this.happiness += 15;
+        }
+
+        for(let event of this.lastEvents){
+            if(event.outage){
+                this.happiness -= 15;
+            }
+        }
+
         this.happiness = this.happiness * 0.75 + 35.0 * 0.25;
         this.happinessHistory.push(this.happiness);
         if(this.happinessHistory.length > 5){
@@ -271,19 +304,40 @@ export class Main extends Phaser.State {
     }
 
     private gameOver(reason: string) {
+        this.teardown();
+
+        this.game.state.start("game_over", false, false, this.slickUI, reason);
+    }
+
+    private teardown() {
         this.nextQuarterButton.container.displayGroup.destroy(true);
         this.lastReportButton.container.displayGroup.destroy(true);
         this.belowText.destroy(true);
         this.music.destroy();
         this.demandText.destroy(true);
         this.quarterText.destroy(true);
+    }
 
+    private gameIsWon() {
+        this.demand.calculateSatisfaction();
 
-        this.game.state.start("game_over", false, false, this.slickUI, reason);
+        //game is over when less than %10 of demand remains unconnected
+        let enoughConnected = (this.demand.satisfaction.unconnected / this.demand.totalDemand) < .10;
+        //and most is reliably connected
+        let enoughReliable = (this.demand.satisfaction.unreliable / this.demand.satisfaction.reliable) < .35;
+
+        return enoughConnected && enoughReliable;
+    }
+
+    private gameWon() {
+        this.teardown();
+
+        this.game.state.start("game_won", false, false, this.slickUI);
     }
 }
 
 interface RandomEvent{
+    outage: boolean;
 
     getDescription(): string;
 
@@ -291,7 +345,7 @@ interface RandomEvent{
 }
 
 class LightningStrike implements RandomEvent{
-    private outage: boolean = false;
+    outage: boolean;
     private line: PowerLine;
     private demand: Demand;
     private facilities: Facilities;
