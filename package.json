@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "clean": "rimraf dist",
-    "assets": "mkdirp dist && ncp assets dist/assets",
+    "assets": "mkdirp dist && ncp assets dist/assets && ncp static-html dist",
     "build": "npm run assets && webpack -p",
     "dev-serve": "lite-server --baseDir=dist"
   },

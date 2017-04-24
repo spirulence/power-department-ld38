@@ -5,6 +5,11 @@ interface GameText{
     next: string[]
 }
 
+export interface LevelInfo{
+    mapID: string
+    cutsceneFile: string
+}
+
 
 export class GameSetup extends Phaser.State {
     private slickUI: any;
@@ -103,6 +108,21 @@ export class GameSetup extends Phaser.State {
     private startGame() {
         this.music.destroy();
         this.panel.container.displayGroup.destroy(true);
-        this.game.state.start("main", false, false, this.slickUI, this.difficulty, "map1");
+
+        let levelInfo: LevelInfo = {mapID: "map1", cutsceneFile: "level2intro.html"};
+        if(document.title === "Power Department - Level 2"){
+            levelInfo.mapID = "map2";
+            levelInfo.cutsceneFile = "level3intro.html";
+        }else if(document.title === "Power Department - Level 3"){
+            levelInfo.mapID = "map3";
+            levelInfo.cutsceneFile = "level4intro.html";
+        }else if(document.title === "Power Department - Level 4"){
+            levelInfo.mapID = "map4";
+            levelInfo.cutsceneFile = "level5intro.html";
+        }else if(document.title === "Power Department - Level 5"){
+            levelInfo.mapID = "map5";
+            levelInfo.cutsceneFile = "outro.html";
+        }
+        this.game.state.start("main", false, false, this.slickUI, this.difficulty, levelInfo);
     }
 }

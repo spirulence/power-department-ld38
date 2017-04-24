@@ -8,6 +8,7 @@ import {Demand, Satisfaction} from "../mainstate/Demand";
 import * as _ from "lodash";
 import {LandPrice} from "../mainstate/LandPrice";
 import {TerrainTypes} from "../mainstate/Terrain";
+import {LevelInfo} from "./GameSetup";
 
 
 interface Finances {
@@ -40,11 +41,13 @@ export class Main extends Phaser.State {
     private lastEvents: RandomEvent[];
     private active: boolean;
     private mapID: string;
+    private nextCutscene: string;
 
-    init(slickUI: any, difficulty: string, map: string){
+    init(slickUI: any, difficulty: string, level: LevelInfo){
         this.slickUI = slickUI;
         this.difficulty = difficulty;
-        this.mapID = map;
+        this.mapID = level.mapID;
+        this.nextCutscene = level.cutsceneFile;
     }
 
     create() {
@@ -372,7 +375,7 @@ export class Main extends Phaser.State {
     private gameWon() {
         this.teardown();
 
-        this.game.state.start("game_won", false, false, this.slickUI);
+        this.game.state.start("game_won", false, false, this.slickUI, this.nextCutscene);
     }
 
     private runFinances() {
