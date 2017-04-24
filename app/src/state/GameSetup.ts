@@ -103,6 +103,6 @@ export class GameSetup extends Phaser.State {
     private startGame() {
         this.music.destroy();
         this.panel.container.displayGroup.destroy(true);
-        this.game.state.start("main", false, false, this.slickUI, this.difficulty);
+        this.game.state.start("main", false, false, this.slickUI, this.difficulty, "map1");
     }
 }
