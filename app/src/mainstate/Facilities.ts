@@ -2,6 +2,7 @@ import {Inventory} from "./Inventory";
 import {Graph} from "../utils/Graph";
 import {bresenhamLine} from "./LinePlacer";
 import * as _ from "lodash";
+import {LandPrice} from "./LandPrice";
 
 export enum FacilityTypes{
     Nothing = -1,
@@ -172,6 +173,7 @@ export class Facilities {
     powerNetwork: PowerNetwork;
 
     private static readonly POWER_LAYER = "power";
+    private landPrice: LandPrice;
 
 
     constructor(map: Phaser.Tilemap) {
@@ -194,9 +196,10 @@ export class Facilities {
     addSubstation(baseTile: Phaser.Tile) {
         let location = {x: baseTile.x, y: baseTile.y};
         let facilityAtTile = this.powerNetwork.at(location) === "substation";
-        if (this.inventory.enoughDollars(2) && !facilityAtTile) {
+        let price = 2 + this.landPrice.getPrice(baseTile.x, baseTile.y);
+        if (this.inventory.enoughDollars(price) && !facilityAtTile) {
             this.map.putTile(6, baseTile.x, baseTile.y, "power");
-            this.inventory.deductDollars(2);
+            this.inventory.deductDollars(price);
             this.powerNetwork.addSubstation(location);
             this.notify();
         }
@@ -205,9 +208,10 @@ export class Facilities {
     addPlant(baseTile: Phaser.Tile) {
         let location = {x: baseTile.x, y: baseTile.y};
         let facilityAtTile = this.powerNetwork.at(location) === "plant";
-        if (this.inventory.enoughDollars(5) && !facilityAtTile) {
+        let price = 5 + this.landPrice.getPrice(baseTile.x, baseTile.y);
+        if (this.inventory.enoughDollars(price) && !facilityAtTile) {
             this.map.putTile(5, baseTile.x, baseTile.y, "power");
-            this.inventory.deductDollars(5);
+            this.inventory.deductDollars(price);
             this.powerNetwork.addPlant(location);
             this.notify();
         }
@@ -257,6 +261,10 @@ export class Facilities {
 
     setInventory(inventory: Inventory) {
         this.inventory = inventory;
+    }
+
+    setLandPrice(landPrice: LandPrice){
+        this.landPrice = landPrice;
     }
 
     areConnectable(source: Phaser.Tile, destination: Phaser.Tile) {
