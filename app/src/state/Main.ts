@@ -39,10 +39,12 @@ export class Main extends Phaser.State {
     private satisfactionHistory: Satisfaction[];
     private lastEvents: RandomEvent[];
     private active: boolean;
+    private mapID: string;
 
-    init(slickUI: any, difficulty: string){
+    init(slickUI: any, difficulty: string, map: string){
         this.slickUI = slickUI;
         this.difficulty = difficulty;
+        this.mapID = map;
     }
 
     create() {
@@ -90,14 +92,17 @@ export class Main extends Phaser.State {
     }
 
     private setupMap() {
-        this.map = this.add.tilemap("map1");
+        this.map = this.add.tilemap(this.mapID);
         this.map.addTilesetImage("tileset", "tileset");
 
-        let imagelayer = this.map.images[0];
-        this.add.image(imagelayer.x, imagelayer.y, imagelayer.name);
+        for(let imageLayer of this.map.images) {
+            this.add.image(imageLayer.x, imageLayer.y, imageLayer.name);
+        }
 
         let baseLayer = this.map.createLayer("base");
-        baseLayer.alpha = 0.3;
+        if(this.map.images.length > 0){
+            baseLayer.alpha = 0.3;
+        }
         baseLayer.resizeWorld();
         baseLayer.inputEnabled = true;
         baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));

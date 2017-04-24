@@ -196,9 +196,9 @@ export class Facilities {
     addSubstation(baseTile: Phaser.Tile) {
         let location = {x: baseTile.x, y: baseTile.y};
         let facilityAtTile = this.powerNetwork.at(location) === "substation";
-        let price = 2 + this.landPrice.getPrice(baseTile.x, baseTile.y);
+        let price = 5 + this.landPrice.getPrice(baseTile.x, baseTile.y);
         if (this.inventory.enoughDollars(price) && !facilityAtTile) {
-            this.map.putTile(6, baseTile.x, baseTile.y, "power");
+            this.map.putTile(FacilityTypes.Substation, baseTile.x, baseTile.y, "power");
             this.inventory.deductDollars(price);
             this.powerNetwork.addSubstation(location);
             this.notify();
@@ -208,9 +208,9 @@ export class Facilities {
     addPlant(baseTile: Phaser.Tile) {
         let location = {x: baseTile.x, y: baseTile.y};
         let facilityAtTile = this.powerNetwork.at(location) === "plant";
-        let price = 5 + this.landPrice.getPrice(baseTile.x, baseTile.y);
+        let price = 25 + this.landPrice.getPrice(baseTile.x, baseTile.y);
         if (this.inventory.enoughDollars(price) && !facilityAtTile) {
-            this.map.putTile(5, baseTile.x, baseTile.y, "power");
+            this.map.putTile(FacilityTypes.Plant, baseTile.x, baseTile.y, "power");
             this.inventory.deductDollars(price);
             this.powerNetwork.addPlant(location);
             this.notify();
