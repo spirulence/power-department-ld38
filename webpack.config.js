@@ -15,9 +15,41 @@ module.exports = {
     },
 
     plugins: [
+        new HtmlWebpackPlugin({
+            title: "Intro",
+            filename: "index.html",
+            cutscene:"sunrise-1.webm",
+            level: "level1.html",
+            template: "app/templates/cutscene.ejs",
+            chunks: []
+        }),
         new HtmlWebpackPlugin({title: 'Power Department - Level 1', filename: "level1.html"}),
+        new HtmlWebpackPlugin({
+            title: "Cutscene",
+            filename: "level2intro.html",
+            cutscene:"sunrise-1.webm",
+            level: "level2.html",
+            template: "app/templates/cutscene.ejs",
+            chunks: []
+        }),
         new HtmlWebpackPlugin({title: 'Power Department - Level 2', filename: "level2.html"}),
+        new HtmlWebpackPlugin({
+            title: "Cutscene",
+            filename: "level3intro.html",
+            cutscene:"sunrise-1.webm",
+            level: "level3.html",
+            template: "app/templates/cutscene.ejs",
+            chunks: []
+        }),
         new HtmlWebpackPlugin({title: 'Power Department - Level 3', filename: "level3.html"}),
+        new HtmlWebpackPlugin({
+            title: "Cutscene",
+            filename: "level4intro.html",
+            cutscene:"sunrise-1.webm",
+            level: "level4.html",
+            template: "app/templates/cutscene.ejs",
+            chunks: []
+        }),
         new HtmlWebpackPlugin({title: 'Power Department - Level 4', filename: "level4.html"}),
         new webpack.optimize.CommonsChunkPlugin({name: 'includes', filename: 'includes.bundle.js'}),
         new ExtractTextPlugin('styles.css')

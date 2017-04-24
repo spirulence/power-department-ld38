@@ -23,3 +23,22 @@ canvas {
 .center-text {
     text-align: center;
 }
+
+#next-button{
+    position: absolute;
+    top: 600px;
+    width: 100%;
+    display: none;
+}
+
+#next-button a{
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: larger;
+    color: aliceblue;
+    background-color: dimgrey;
+    padding: 10px;
+}
+
+#next-button.visible{
+    display: block;
+}

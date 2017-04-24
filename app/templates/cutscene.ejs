@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Power Department - <%= htmlWebpackPlugin.options.title %></title>
+    <link href="styles.css" rel="stylesheet"></head>
+</head>
+<body>
+<video autoplay class="cutscene" id="cutscene" src="assets/<%= htmlWebpackPlugin.options.cutscene %>"></video>
+<p id="next-button" class="center-text"><a class="center-text" href="<%= htmlWebpackPlugin.options.level %>">Next Level</a></p>
+<script>
+    var video = document.getElementById("cutscene");
+    var nextButton = document.getElementById("next-button");
+    video.onended = function() {
+        nextButton.className += " visible";
+    };
+</script>
+</body>
+</html>

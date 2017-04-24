@@ -31,7 +31,7 @@ export class Main extends Phaser.State {
     private demandText: Phaser.Text;
     private slickUI: any;
     private difficulty: string;
-    private music: Phaser.Sound;
+    private music: Phaser.Sound[];
     private quarter: number;
     private quarterText: Phaser.Text;
     private nextQuarterButton: SlickUI.Element.Button;
@@ -191,8 +191,23 @@ export class Main extends Phaser.State {
     }
 
     private setupMusic() {
-        this.music = this.add.audio("main_music_01");
-        this.music.loopFull(0.1);
+        this.music = [];
+        this.music.push(this.add.audio("main_music_01"));
+        this.music.push(this.add.audio("main_music_02"));
+        this.music.push(this.add.audio("main_music_03"));
+
+        let music = this.music;
+        function playSong(){
+            let index = _.random(0, music.length - 1);
+            let chosen = music[index];
+            chosen.play(null, 0, 0.1);
+        }
+
+        for(let track of music){
+            track.onStop.add(playSong);
+        }
+
+        this.music[0].onDecoded.add(playSong);
     }
 
     private setupUI() {
@@ -356,7 +371,7 @@ export class Main extends Phaser.State {
     private teardown() {
         this.nextQuarterButton.container.displayGroup.destroy(true);
         this.belowText.destroy(true);
-        this.music.destroy();
+        this.music.forEach(function(track){track.destroy()});
         this.demandText.destroy(true);
         this.quarterText.destroy(true);
     }

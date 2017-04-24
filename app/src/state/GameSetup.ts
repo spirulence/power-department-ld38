@@ -13,7 +13,7 @@ export interface LevelInfo{
 
 export class GameSetup extends Phaser.State {
     private slickUI: any;
-    private music: Phaser.Sound;
+    // private music: Phaser.Sound;
     private texts: {[p: string]: GameText};
     private textIndex: string;
     private textElement: SlickUI.Element.Text;
@@ -27,8 +27,8 @@ export class GameSetup extends Phaser.State {
     }
 
     create() {
-        this.music = this.add.audio("setup_music");
-        this.music.loopFull(0.5);
+        // this.music = this.add.audio("setup_music");
+        // this.music.loopFull(0.5);
 
         let panel = new SlickUI.Element.Panel(100, 100, 800, 400);
         this.slickUI.add(panel);
@@ -106,7 +106,6 @@ export class GameSetup extends Phaser.State {
     }
 
     private startGame() {
-        this.music.destroy();
         this.panel.container.displayGroup.destroy(true);
 
         let levelInfo: LevelInfo = {mapID: "map1", cutsceneFile: "level2intro.html"};
