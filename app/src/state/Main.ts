@@ -34,7 +34,6 @@ export class Main extends Phaser.State {
     private quarter: number;
     private quarterText: Phaser.Text;
     private nextQuarterButton: SlickUI.Element.Button;
-    private lastReportButton: SlickUI.Element.Button;
     private happiness: number;
     private happinessHistory: number[];
     private satisfactionHistory: Satisfaction[];
@@ -189,16 +188,11 @@ export class Main extends Phaser.State {
     }
 
     private setupUI() {
-        let nextQuarter = new SlickUI.Element.Button(350, 600, 150, 25);
+        let nextQuarter = new SlickUI.Element.Button(425, 600, 150, 25);
         this.slickUI.add(nextQuarter);
         nextQuarter.add(new SlickUI.Element.Text(0, 0, "Next Quarter")).center();
         nextQuarter.events.onInputUp.add(this.advanceQuarter, this);
         this.nextQuarterButton = nextQuarter;
-
-        let lastReportButton = new SlickUI.Element.Button(500, 600, 150, 25);
-        this.slickUI.add(lastReportButton);
-        lastReportButton.add(new SlickUI.Element.Text(0, 0, "Last Report")).center();
-        this.lastReportButton = lastReportButton;
     }
 
     private advanceQuarter() {
@@ -353,7 +347,6 @@ export class Main extends Phaser.State {
 
     private teardown() {
         this.nextQuarterButton.container.displayGroup.destroy(true);
-        this.lastReportButton.container.displayGroup.destroy(true);
         this.belowText.destroy(true);
         this.music.destroy();
         this.demandText.destroy(true);
