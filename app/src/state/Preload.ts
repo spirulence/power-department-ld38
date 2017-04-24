@@ -32,6 +32,6 @@ export class Preload extends Phaser.State {
 
     create() {
         this.preloadBar.destroy();
-        this.game.state.start('main_menu', false, false, this.slickUI);
+        this.game.state.start('setup', false, false, this.slickUI);
     }
 }

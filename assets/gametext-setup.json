@@ -1,31 +1,7 @@
 {
-  "0": {
-    "friendlyName": "Begin",
-    "text": "Gather 'round, children! For I'll tell you a tale.",
-    "specials":[],
-    "next": ["1-a-tale"]
-  },
-  "1-a-tale": {
-    "friendlyName": "Next",
-    "text": "A tale of the best power grid planner who ever lived...",
-    "specials":[],
-    "next":["2-name-pick"]
-  },
-  "2-name-pick": {
-    "friendlyName": "Next",
-    "text": "Uh oh, I've forgotten the name. What was it again?",
-    "specials": ["ask-name"],
-    "next":["3-greatest"]
-  },
-  "3-greatest": {
-    "friendlyName": "Next",
-    "text": "That's right, {name}! The greatest power grid planner who ever lived...",
-    "specials":[],
-    "next":["4-got-the-job"]
-  },
-  "4-got-the-job":{
-    "friendlyName": "Next",
-    "text": "It all started when {name} first got the job. Can you imagine what the power grid was like back then?",
+  "0":{
+    "friendlyName": "Intro",
+    "text": "Pick a difficulty.",
     "specials":[],
     "next":[
       "5-difficulty-easy",
@@ -35,29 +11,23 @@
   },
   "5-difficulty-easy":{
     "friendlyName": "Easy",
-    "text": "It was actually pretty decent. If you ask me, it could have been worse, and {name} would still have succeeded!",
+    "text": "OK. You got this.",
     "specials": ["set-difficulty-easy"],
-    "next":["6-so-begins"]
+    "next":["6-start-game"]
   },
   "5-difficulty-medium":{
     "friendlyName": "Medium",
-    "text": "It was okay, but could have been better off. A good challenge for {name}.",
+    "text": "A good challenge!",
     "specials": ["set-difficulty-medium"],
-    "next":["6-so-begins"]
+    "next":["6-start-game"]
   },
   "5-difficulty-hard":{
     "friendlyName": "Hard",
-    "text": "Power was spottier than a cheetah! What a miracle {name} worked",
+    "text": "Buckle up!",
     "specials": ["set-difficulty-hard"],
-    "next":["6-so-begins"]
+    "next":["6-start-game"]
   },
-  "6-so-begins":{
-    "friendlyName": "Next",
-    "text": "And so begins the tale...",
-    "specials":[],
-    "next": ["7-start-game"]
-  },
-  "7-start-game":{
+  "6-start-game":{
     "friendlyName": "Next",
     "text": "",
     "specials": ["start-game"],
