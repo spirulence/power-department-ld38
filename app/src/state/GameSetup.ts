@@ -13,7 +13,6 @@ export interface LevelInfo{
 
 export class GameSetup extends Phaser.State {
     private slickUI: any;
-    // private music: Phaser.Sound;
     private texts: {[p: string]: GameText};
     private textIndex: string;
     private textElement: SlickUI.Element.Text;
@@ -27,10 +26,7 @@ export class GameSetup extends Phaser.State {
     }
 
     create() {
-        // this.music = this.add.audio("setup_music");
-        // this.music.loopFull(0.5);
-
-        let panel = new SlickUI.Element.Panel(100, 100, 800, 400);
+        let panel = new SlickUI.Element.Panel(400, 150, 200, 300);
         this.slickUI.add(panel);
         this.panel = panel;
 
@@ -44,7 +40,6 @@ export class GameSetup extends Phaser.State {
         this.setTextAndRunSpecials();
 
         this.difficulty = "easy";
-
     }
 
     update(){
@@ -65,11 +60,11 @@ export class GameSetup extends Phaser.State {
     }
 
     private addNewButtons() {
-        let y = 250;
+        let y = 100;
         let gameText = this.texts[this.textIndex];
         for (let next of gameText.next) {
             let nextText = this.texts[next];
-            let button = new SlickUI.Element.Button(700, y, 100, 50);
+            let button = new SlickUI.Element.Button(50, y, 100, 50);
             let buttonText = new SlickUI.Element.Text(0, 0, nextText.friendlyName);
             this.panel.add(button);
             button.add(buttonText).center();
