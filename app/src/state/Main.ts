@@ -6,14 +6,23 @@ import {LinePlacer} from "../mainstate/LinePlacer";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 import {Demand, Satisfaction} from "../mainstate/Demand";
 import * as _ from "lodash";
+import {LandPrice} from "../mainstate/LandPrice";
+import {TerrainTypes} from "../mainstate/Terrain";
 
 
+interface Finances {
+    revenue: number
+    maintenance: number
+    fuel: number
+    interest: number
+}
 
 export class Main extends Phaser.State {
     map: Phaser.Tilemap;
     facilities: Facilities;
     dialogs: Dialogs;
     inventory: Inventory;
+    landPrice: LandPrice;
 
     private belowText: Phaser.Text;
     private placer: LinePlacer;
@@ -41,9 +50,9 @@ export class Main extends Phaser.State {
         this.active = true;
 
         this.setupQuarterCounter();
-
         this.setupMusic();
         this.setupMap();
+        this.setupLandPrice();
         this.setupFacilities();
         this.setupDialogs();
         this.setupText();
@@ -56,10 +65,11 @@ export class Main extends Phaser.State {
 
     private setupFacilities() {
         this.facilities = new Facilities(this.map);
+        this.facilities.setLandPrice(this.landPrice);
     }
 
     private setupInventory() {
-        let money = 500;
+        let money = 250;
         if(this.difficulty == "medium"){
             money = 125;
         }else if(this.difficulty == "hard"){
@@ -84,7 +94,11 @@ export class Main extends Phaser.State {
         this.map = this.add.tilemap("map1");
         this.map.addTilesetImage("tileset", "tileset");
 
+        let imagelayer = this.map.images[0];
+        this.add.image(imagelayer.x, imagelayer.y, imagelayer.name);
+
         let baseLayer = this.map.createLayer("base");
+        baseLayer.alpha = 0.3;
         baseLayer.resizeWorld();
         baseLayer.inputEnabled = true;
         baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));
@@ -117,8 +131,13 @@ export class Main extends Phaser.State {
         let powerTile = this.map.getTileWorldXY(
             pointer.position.x, pointer.position.y,
             undefined, undefined, "power", true);
+        let baseTile = this.map.getTileWorldXY(
+            pointer.position.x, pointer.position.y,
+            undefined, undefined, "base", true);
 
-        if(this.nextQuarterButton.visible === true && this.active) {
+        let terrainGood = baseTile.index != TerrainTypes.Mountain && baseTile.index != TerrainTypes.Water
+
+        if(this.nextQuarterButton.visible === true && this.active && terrainGood) {
             if (this.placer == null) {
                 this.dialogs.powerTileClicked(powerTile, pointer);
             } else {
@@ -183,15 +202,22 @@ export class Main extends Phaser.State {
     }
 
     private advanceQuarter() {
-        this.generateRevenue();
-
+        let finances: Finances = this.runFinances();
+        this.inventory.addDollars(finances.revenue);
+        this.inventory.deductDollars(finances.maintenance);
+        this.inventory.deductDollars(finances.fuel);
+        this.inventory.deductDollars(finances.interest);
 
         if(this.gameIsWon()){
             this.gameWon();
+            return;
+        }
+
+        if(this.isBankrupt()){
+            return;
         }
 
         let gameOver = this.updateHappiness();
-
         if(gameOver){
             return;
         }
@@ -214,8 +240,12 @@ export class Main extends Phaser.State {
         }
 
         descriptions.push("");
-        descriptions.push("");
         descriptions.push(this.getHappinessString());
+        descriptions.push("");
+        descriptions.push("Revenue: +"+finances.revenue);
+        descriptions.push("Maintenance: -"+finances.maintenance);
+        descriptions.push("Fuel: -"+finances.fuel);
+        descriptions.push("Loan Interest: -"+finances.interest);
 
         let panel = new SlickUI.Element.Panel(250, 50, 500, 500);
         this.slickUI.add(panel);
@@ -297,6 +327,8 @@ export class Main extends Phaser.State {
             }
         }
 
+        this.happiness -= Math.floor(this.demand.satisfaction.unreliable / 10);
+
         this.happiness = this.happiness * 0.75 + 35.0 * 0.25;
         this.happinessHistory.push(this.happiness);
         if(this.happinessHistory.length > 5){
@@ -345,8 +377,49 @@ export class Main extends Phaser.State {
         this.game.state.start("game_won", false, false, this.slickUI);
     }
 
-    private generateRevenue() {
+    private runFinances() {
+        //generate revenue based on how many connected
+        let revenue = this.demand.satisfaction.reliable + this.demand.satisfaction.unreliable;
+        revenue = Math.floor(revenue / 2);
 
+        //pay maintenance based on lines and substations
+        let maintenance = 0;
+        for(let subnetwork of this.facilities.powerNetwork.allSubnetworks()){
+            maintenance += subnetwork.substations.length * 2;
+            maintenance += subnetwork.lines.length;
+            maintenance += subnetwork.plants.length * 3;
+        }
+
+        //pay cost of fuel based on how many plants
+        let fuel = 0;
+        for(let subnetwork of this.facilities.powerNetwork.allSubnetworks()){
+            fuel += subnetwork.plants.length * 10;
+        }
+
+        let interest = 0;
+        if(this.inventory.dollarsMillions < 0){
+            interest += Math.floor(this.inventory.dollarsMillions * .12);
+        }
+
+        return {
+            revenue: revenue,
+            maintenance: maintenance,
+            fuel: fuel,
+            interest: interest,
+        };
+    }
+
+    private setupLandPrice() {
+        this.landPrice = new LandPrice();
+        this.landPrice.map = this.map;
+    }
+
+    private isBankrupt() {
+        if(this.inventory.dollarsMillions <= -100){
+            this.gameOver("You are bankrupt.");
+            return true;
+        }
+        return false;
     }
 }
 

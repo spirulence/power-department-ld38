@@ -3,6 +3,7 @@ export type InventoryNotifier = (inv: Inventory)=>void;
 export class Inventory{
     dollarsMillions: number;
     notifiers: InventoryNotifier[];
+    private maximumDebt = 100;
 
     constructor(money: number){
         this.dollarsMillions = money;
@@ -13,8 +14,9 @@ export class Inventory{
         this.notifiers.push(callback);
     }
 
+
     enoughDollars(purchase: number){
-        return this.dollarsMillions >= purchase;
+        return (this.dollarsMillions + this.maximumDebt) >= purchase;
     }
 
     deductDollars(purchase: number) {
@@ -26,5 +28,9 @@ export class Inventory{
         for (let callback of this.notifiers) {
             callback(this);
         }
+    }
+
+    addDollars(addition: number) {
+        this.dollarsMillions += addition;
     }
 }

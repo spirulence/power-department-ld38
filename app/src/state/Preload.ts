@@ -6,8 +6,9 @@ export class Preload extends Phaser.State {
         this.preloadBar = this.add.sprite(290, 290, 'preload-bar');
         this.load.setPreloadSprite(this.preloadBar);
 
-        this.load.tilemap("map1", "assets/map1.json", null, Phaser.Tilemap.TILED_JSON);
+        this.load.tilemap("map1", "assets/rural-1.json", null, Phaser.Tilemap.TILED_JSON);
         this.load.image("tileset", "assets/tileset.png");
+        this.load.image("fancy", "assets/1.png");
 
         this.load.spritesheet('buttons', 'assets/buttons.png', 32, 32);
 

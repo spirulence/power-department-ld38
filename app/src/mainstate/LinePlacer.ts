@@ -1,5 +1,6 @@
 import {Facilities, FacilityTypes} from "./Facilities";
 import {Inventory} from "./Inventory";
+import {TerrainTypes} from "./Terrain";
 
 interface SimplePoint{
     x: number,
@@ -123,6 +124,8 @@ export class LinePlacer{
 
     private purchase(inventory: Inventory, facilities: Facilities) {
         let cost = this.coords.length;
+        cost += this.terrainCost(this.coords);
+
         if(inventory.enoughDollars(cost) && facilities.areConnectable(this.source, this.destination)){
             inventory.deductDollars(cost);
             for(let coord of this.coords){
@@ -130,5 +133,18 @@ export class LinePlacer{
             }
             facilities.addLine(this.source, this.destination, this.coords);
         }
+    }
+
+    private terrainCost(coords: SimplePoint[]) {
+        let extraCost = 0;
+        for(let coord of coords){
+            let tileIndex = this.map.getTile(coord.x, coord.y, "base", true).index
+            if(tileIndex == TerrainTypes.Mountain){
+                extraCost += 5;
+            }else if(tileIndex == TerrainTypes.Water){
+                extraCost += 3;
+            }
+        }
+        return extraCost;
     }
 }
