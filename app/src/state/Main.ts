@@ -43,6 +43,8 @@ export class Main extends Phaser.State {
     private mapID: string;
     private nextCutscene: string;
     private priceLayer: Phaser.TilemapLayer;
+    private mapGroup: Phaser.Group;
+    private scrollSpeed: number;
 
     init(slickUI: any, difficulty: string, level: LevelInfo){
         this.slickUI = slickUI;
@@ -53,10 +55,11 @@ export class Main extends Phaser.State {
 
     create() {
         this.active = true;
+        this.scrollSpeed = 4;
 
-        this.setupQuarterCounter();
         this.setupMusic();
         this.setupMap();
+        this.setupQuarterCounter();
         this.setupLandPrice();
         this.setupFacilities();
         this.setupDialogs();
@@ -96,27 +99,59 @@ export class Main extends Phaser.State {
     }
 
     private setupMap() {
+        this.stage.smoothed = false;
+
+        this.mapGroup = this.add.group();
+
         this.map = this.add.tilemap(this.mapID);
         this.map.addTilesetImage("tileset", "tileset");
 
         for(let imageLayer of this.map.images) {
-            this.add.image(imageLayer.x, imageLayer.y, imageLayer.image);
+            this.add.image(imageLayer.x, imageLayer.y, imageLayer.image, null, this.mapGroup);
         }
 
-        let baseLayer = this.map.createLayer("base");
+        let baseLayer = this.map.createLayer(MapLayers.BASE, null, null, this.mapGroup);
         if(this.map.images.length > 0){
             baseLayer.alpha = 0.3;
         }
-        baseLayer.resizeWorld();
         baseLayer.inputEnabled = true;
         baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));
 
-        this.map.createBlankLayer(MapLayers.TEMP_LAYER, 125, 75, 8, 8);
-        this.map.createBlankLayer(MapLayers.LINES_LAYER, 125, 75, 8, 8);
-        this.map.createBlankLayer(MapLayers.FACILITIES_LAYER, 125, 75, 8, 8);
-        this.map.createBlankLayer(MapLayers.HIGHLIGHTS, 125, 75, 8, 8);
-        this.priceLayer = this.map.createBlankLayer(MapLayers.LAND_PRICE, 125, 75, 8, 8);
+        this.map.createBlankLayer(MapLayers.TEMP_LAYER, 125, 75, 8, 8, this.mapGroup);
+        this.map.createBlankLayer(MapLayers.LINES_LAYER, 125, 75, 8, 8, this.mapGroup);
+        this.map.createBlankLayer(MapLayers.FACILITIES_LAYER, 125, 75, 8, 8, this.mapGroup);
+        this.map.createBlankLayer(MapLayers.HIGHLIGHTS, 125, 75, 8, 8, this.mapGroup);
+        this.priceLayer = this.map.createBlankLayer(MapLayers.LAND_PRICE, 125, 75, 8, 8, this.mapGroup);
         this.priceLayer.visible = false;
+
+        let centeredX = -(this.mapGroup.width*2 - this.world.width)/2;
+        let centeredY = -(this.mapGroup.height*2 - this.world.height)/2;
+        let mapGroup = this.mapGroup;
+
+        let zoomIn = function(){
+            if(mapGroup.scale.x != 2) {
+                mapGroup.scale.set(2);
+                mapGroup.position.set(centeredX, centeredY);
+            }
+        };
+
+        let zoomOut = function(){
+            if(mapGroup.scale.x != 1) {
+                mapGroup.scale.set(1);
+                mapGroup.position.set(0);
+            }
+        };
+
+        this.input.keyboard.addKey(Phaser.KeyCode.ONE).onUp.add(zoomIn);
+        this.input.keyboard.addKey(Phaser.KeyCode.TWO).onUp.add(zoomOut);
+        let mouse = this.input.mouse;
+        this.input.mouse.mouseWheelCallback = function(){
+            if(mouse.wheelDelta == Phaser.Mouse.WHEEL_DOWN){
+                zoomIn();
+            }else{
+                zoomOut();
+            }
+        }
     }
 
     private setupDialogs() {
@@ -140,11 +175,13 @@ export class Main extends Phaser.State {
     }
 
     private clickBaseLayer(_mapLayer: Phaser.TilemapLayer, pointer: Phaser.Pointer){
+        let coords = this.mapGroup.toLocal(pointer.position, this.world);
+
         let powerTile = this.map.getTileWorldXY(
-            pointer.position.x, pointer.position.y,
+            coords.x, coords.y,
             undefined, undefined, MapLayers.FACILITIES_LAYER, true);
         let baseTile = this.map.getTileWorldXY(
-            pointer.position.x, pointer.position.y,
+            coords.x, coords.y,
             undefined, undefined, MapLayers.BASE, true);
 
         let terrainGood = baseTile.index != TerrainTypes.Mountain && baseTile.index != TerrainTypes.Water;
@@ -164,8 +201,33 @@ export class Main extends Phaser.State {
         this.active = false;
     }
 
-    update() {
 
+
+    update() {
+        if(this.isZoomedIn()){
+            this.scrollMap();
+        }
+    }
+
+    private scrollMap() {
+        if (this.input.keyboard.isDown(Phaser.KeyCode.LEFT)) {
+            this.mapGroup.position.x += this.scrollSpeed;
+        }
+        if (this.input.keyboard.isDown(Phaser.KeyCode.RIGHT)) {
+            this.mapGroup.position.x -= this.scrollSpeed;
+        }
+        if (this.input.keyboard.isDown(Phaser.KeyCode.UP)) {
+            this.mapGroup.position.y += this.scrollSpeed;
+        }
+        if (this.input.keyboard.isDown(Phaser.KeyCode.DOWN)) {
+            this.mapGroup.position.y -= this.scrollSpeed;
+        }
+        this.mapGroup.position.clampX(-(this.mapGroup.width - this.world.width), 0);
+        this.mapGroup.position.clampY(-(this.mapGroup.height - this.world.height), 0);
+    }
+
+    private isZoomedIn() {
+        return this.mapGroup.scale.x != 1;
     }
 
     private setupHover() {
@@ -286,7 +348,7 @@ export class Main extends Phaser.State {
         this.quarter = 0;
         let textStyle = {font: "20px monospace", fill: "#fff", };
         this.quarterText = this.add.text(0, 0, `Quarter ${this.quarter}`, textStyle);
-        this.quarterText.setTextBounds(150,600, 200, 25);
+        this.quarterText.setTextBounds(150, 600, 200, 25);
     }
 
     private generateEvents() {
