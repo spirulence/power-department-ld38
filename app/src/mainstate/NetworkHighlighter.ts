@@ -1,4 +1,4 @@
-import {Facilities, SubNetwork, SUBSTATION_LEVELS} from "./Facilities";
+import {Facilities, SubNetwork, VertexPoint, Facility, MapLayers} from "./Facilities";
 
 export enum Highlights{
     Powered = 8,
@@ -23,15 +23,13 @@ export class NetworkHighlighter{
     private lastHighlights: SimplePoint[];
     private lastHighlightPoint: SimplePoint;
 
-    private static readonly TEMP_LAYER = "temporary";
-
     constructor(){
         this.lastHighlights = [];
         this.lastHighlightPoint = {x:-1, y:-1};
     }
 
     highlightHover(_ptr: Phaser.Pointer, x: number, y: number, _isClick: boolean) {
-        let tile = this._map.getTileWorldXY(x, y, undefined, undefined, NetworkHighlighter.TEMP_LAYER, true);
+        let tile = this._map.getTileWorldXY(x, y, undefined, undefined, MapLayers.TEMP_LAYER, true);
         if(tile == null){
             this.clearHighlights();
             return
@@ -45,9 +43,9 @@ export class NetworkHighlighter{
 
         this.clearHighlights();
 
-        let at = this._facilities.powerNetwork.at(coord);
-        if (at !== "") {
-            let subNetwork = this._facilities.powerNetwork.subnetworkAt(coord);
+        let vertexPoint = new VertexPoint(coord.x, coord.y, -1);
+        if (this._facilities.isFacilityAt(vertexPoint)) {
+            let subNetwork = this._facilities.powerNetwork.subnetworkAt(vertexPoint);
             this.highlightSubNetwork(subNetwork);
         }
     }
@@ -58,18 +56,17 @@ export class NetworkHighlighter{
                 this.highlightDistribution(substation);
     }
 
-    private highlightDistribution(substation: SimplePoint) {
-        let coverage = SUBSTATION_LEVELS[0];
-        for (let offset of coverage) {
-            let covered: SimplePoint = {x: offset.x + substation.x, y: offset.y + substation.y};
-            this._map.putTile(Highlights.Powered, covered.x, covered.y, NetworkHighlighter.TEMP_LAYER);
+    private highlightDistribution(substation: Facility) {
+        for (let offset of substation.coverageArea()) {
+            let covered: SimplePoint = {x: offset.x + substation.location.x, y: offset.y + substation.location.y};
+            this._map.putTile(Highlights.Powered, covered.x, covered.y, MapLayers.HIGHLIGHTS);
             this.lastHighlights.push(covered);
         }
     }
 
     private clearHighlights() {
         for(let highlight of this.lastHighlights){
-            this._map.putTile(null, highlight.x, highlight.y, NetworkHighlighter.TEMP_LAYER)
+            this._map.putTile(null, highlight.x, highlight.y, MapLayers.HIGHLIGHTS)
         }
         this.lastHighlights = [];
     }

@@ -97,10 +97,10 @@ export class Graph{
     }
 
     removeEdge(v1: number, v2: number) {
-        this.adjacency[v1] = this.adjacency[v1].filter((value: number, _index: number, _array:number[]) =>{
+        this.adjacency[v1] = this.adjacency[v1].filter((value: number) =>{
             return value !== v2;
         });
-        this.adjacency[v2] = this.adjacency[v2].filter((value: number, _index: number, _array:number[]) =>{
+        this.adjacency[v2] = this.adjacency[v2].filter((value: number) =>{
             return value !== v1;
         });
 

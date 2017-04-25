@@ -75,7 +75,7 @@ export class Demand{
     private calculateConnectedDemand(subNetwork: SubNetwork) {
         let demand = 0;
         for(let substation of subNetwork.substations){
-            for(let covered of Facilities.coverageArea(substation)){
+            for(let covered of substation.coverageArea()){
                 let tile = this._map.getTile(covered.x, covered.y, "base", true).index;
                 if(tile === Consumers.Residential){
                     demand += 5;
