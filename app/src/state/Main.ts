@@ -1,6 +1,6 @@
 ///<reference path="../defs/definitions.d.ts"/>
 import {Dialogs, DialogButtons} from "../interface/Dialogs";
-import {Facilities, PowerLine} from "../mainstate/Facilities";
+import {Facilities, PowerLine, MapLayers} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
@@ -110,8 +110,10 @@ export class Main extends Phaser.State {
         baseLayer.inputEnabled = true;
         baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));
 
-        this.map.createBlankLayer("power", 125, 75, 8, 8);
-        this.map.createBlankLayer("temporary", 125, 75, 8, 8);
+        this.map.createBlankLayer(MapLayers.TEMP_LAYER, 125, 75, 8, 8);
+        this.map.createBlankLayer(MapLayers.LINES_LAYER, 125, 75, 8, 8);
+        this.map.createBlankLayer(MapLayers.FACILITIES_LAYER, 125, 75, 8, 8);
+        this.map.createBlankLayer(MapLayers.HIGHLIGHTS, 125, 75, 8, 8);
     }
 
     private setupDialogs() {
@@ -137,18 +139,18 @@ export class Main extends Phaser.State {
     private clickBaseLayer(_mapLayer: Phaser.TilemapLayer, pointer: Phaser.Pointer){
         let powerTile = this.map.getTileWorldXY(
             pointer.position.x, pointer.position.y,
-            undefined, undefined, "power", true);
+            undefined, undefined, MapLayers.FACILITIES_LAYER, true);
         let baseTile = this.map.getTileWorldXY(
             pointer.position.x, pointer.position.y,
-            undefined, undefined, "base", true);
+            undefined, undefined, MapLayers.BASE, true);
 
-        let terrainGood = baseTile.index != TerrainTypes.Mountain && baseTile.index != TerrainTypes.Water
+        let terrainGood = baseTile.index != TerrainTypes.Mountain && baseTile.index != TerrainTypes.Water;
 
         if(this.nextQuarterButton.visible === true && this.active && terrainGood) {
             if (this.placer == null) {
                 this.dialogs.powerTileClicked(powerTile, pointer);
             } else {
-                this.placer.clickCallback(powerTile, this.inventory, this.facilities);
+                this.placer.clickCallback(powerTile, this.facilities);
                 this.game.input.deleteMoveCallback(this.placer.moveCallback, null);
                 this.placer = null;
             }
@@ -371,7 +373,7 @@ export class Main extends Phaser.State {
     private teardown() {
         this.nextQuarterButton.container.displayGroup.destroy(true);
         this.belowText.destroy(true);
-        this.music.forEach(function(track){track.destroy()});
+        this.music.forEach(function(track){track.onStop.removeAll(); track.destroy()});
         this.demandText.destroy(true);
         this.quarterText.destroy(true);
     }
