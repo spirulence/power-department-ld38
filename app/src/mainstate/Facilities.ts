@@ -17,6 +17,7 @@ export class MapLayers{
     public static readonly LINES_LAYER = "lines";
     public static readonly FACILITIES_LAYER = "facilities";
     public static readonly HIGHLIGHTS = "highlights";
+    public static readonly LAND_PRICE = "land_price";
 }
 
 export class VertexPoint {
