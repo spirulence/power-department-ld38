@@ -42,6 +42,7 @@ export class Main extends Phaser.State {
     private active: boolean;
     private mapID: string;
     private nextCutscene: string;
+    private priceLayer: Phaser.TilemapLayer;
 
     init(slickUI: any, difficulty: string, level: LevelInfo){
         this.slickUI = slickUI;
@@ -114,6 +115,8 @@ export class Main extends Phaser.State {
         this.map.createBlankLayer(MapLayers.LINES_LAYER, 125, 75, 8, 8);
         this.map.createBlankLayer(MapLayers.FACILITIES_LAYER, 125, 75, 8, 8);
         this.map.createBlankLayer(MapLayers.HIGHLIGHTS, 125, 75, 8, 8);
+        this.priceLayer = this.map.createBlankLayer(MapLayers.LAND_PRICE, 125, 75, 8, 8);
+        this.priceLayer.visible = false;
     }
 
     private setupDialogs() {
@@ -435,6 +438,12 @@ export class Main extends Phaser.State {
     private setupLandPrice() {
         this.landPrice = new LandPrice();
         this.landPrice.map = this.map;
+
+        let priceLayer = this.priceLayer;
+        let key = this.game.input.keyboard.addKey(Phaser.KeyCode.P);
+        key.onUp.add(function(){
+            priceLayer.visible = !priceLayer.visible;
+        });
     }
 
     private isBankrupt() {
