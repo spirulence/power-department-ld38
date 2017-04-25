@@ -339,6 +339,20 @@ export class PowerNetwork {
         }
         return lines;
     }
+
+    getFacilityConnections(facility: Facility) {
+        let linesHashed: {[id:string]: PowerLine} = {};
+        for(let peerVertex of this.graph.adjacent(facility.location.vertex)){
+            let line = this.linesByVertex[facility.location.vertex][peerVertex];
+            linesHashed[line.hash()] = line;
+        }
+
+        let lines: PowerLine[] = [];
+        for(let lineKey in linesHashed){
+            lines.push(linesHashed[lineKey]);
+        }
+        return lines;
+    }
 }
 
 export type FacilitiesNotifier = (facilities: Facilities)=>void;
@@ -425,5 +439,12 @@ export class Facilities {
 
     isFacilityAt(coord: VertexPoint) {
         return this.map.getTile(coord.x, coord.y, MapLayers.FACILITIES_LAYER, true).index != FacilityTypes.Nothing;
+    }
+
+    deleteConnectionsAtFacility(facility: Facility) {
+        let connectedLines = this.powerNetwork.getFacilityConnections(facility);
+        for(let line of connectedLines){
+            this.deleteLine(line);
+        }
     }
 }

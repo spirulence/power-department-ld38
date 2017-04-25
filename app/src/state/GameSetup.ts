@@ -112,9 +112,6 @@ export class GameSetup extends Phaser.State {
             levelInfo.cutsceneFile = "level4intro.html";
         }else if(document.title === "Power Department - Level 4"){
             levelInfo.mapID = "map4";
-            levelInfo.cutsceneFile = "level5intro.html";
-        }else if(document.title === "Power Department - Level 5"){
-            levelInfo.mapID = "map5";
             levelInfo.cutsceneFile = "outro.html";
         }
         this.game.state.start("main", false, false, this.slickUI, this.difficulty, levelInfo);

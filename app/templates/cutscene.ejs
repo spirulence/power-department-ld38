@@ -12,7 +12,9 @@
     var video = document.getElementById("cutscene");
     var nextButton = document.getElementById("next-button");
     video.onended = function() {
-        nextButton.className += " visible";
+        if(!window.location.endsWith("outro.html")) {
+            nextButton.className += " visible";
+        }
     };
 </script>
 </body>
