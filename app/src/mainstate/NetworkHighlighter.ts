@@ -57,8 +57,7 @@ export class NetworkHighlighter{
     }
 
     private highlightDistribution(substation: Facility) {
-        for (let offset of substation.coverageArea()) {
-            let covered: SimplePoint = {x: offset.x + substation.location.x, y: offset.y + substation.location.y};
+        for (let covered of substation.coverageArea()) {
             this._map.putTile(Highlights.Powered, covered.x, covered.y, MapLayers.HIGHLIGHTS);
             this.lastHighlights.push(covered);
         }
