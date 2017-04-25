@@ -11,7 +11,8 @@ export class Preload extends Phaser.State {
         this.load.tilemap("map3", "assets/islands-3.json", null, Phaser.Tilemap.TILED_JSON);
         this.load.tilemap("map4", "assets/icy-4.json", null, Phaser.Tilemap.TILED_JSON);
         this.load.image("tileset", "assets/tileset.png");
-        this.load.image("fancy", "assets/1.png");
+        this.load.image("rural-1.png", "assets/rural-1.png");
+        this.load.image("delta-2.png", "assets/delta-2.png");
 
         this.load.spritesheet('buttons', 'assets/buttons.png', 32, 32);
 

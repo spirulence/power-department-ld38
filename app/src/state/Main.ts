@@ -1,6 +1,6 @@
 ///<reference path="../defs/definitions.d.ts"/>
 import {Dialogs, DialogButtons} from "../interface/Dialogs";
-import {Facilities, PowerLine, MapLayers} from "../mainstate/Facilities";
+import {Facilities, PowerLine, MapLayers, Facility} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
@@ -99,7 +99,7 @@ export class Main extends Phaser.State {
         this.map.addTilesetImage("tileset", "tileset");
 
         for(let imageLayer of this.map.images) {
-            this.add.image(imageLayer.x, imageLayer.y, imageLayer.name);
+            this.add.image(imageLayer.x, imageLayer.y, imageLayer.image);
         }
 
         let baseLayer = this.map.createLayer("base");
@@ -292,6 +292,11 @@ export class Main extends Phaser.State {
         let chance = Math.random();
         if(chance > 0.50){
             events.push(new LightningStrike(this.facilities, this.demand));
+        }
+
+        chance = Math.random();
+        if(chance > 0.80 && this.mapID != "map1"){
+            events.push(new Tornado(this.facilities, this.demand));
         }
 
         for(let event of events){
@@ -501,9 +506,57 @@ class LightningStrike implements RandomEvent{
     }
 }
 
-// class TransformerExplosion implements RandomEvent{
-//
-// }
+class Tornado implements RandomEvent{
+    outage: boolean;
+    private facilities: Facilities;
+    private substation: Facility;
+    private demand: Demand;
+
+    constructor(facilities: Facilities, demand: Demand){
+        this.facilities = facilities;
+        this.substation = this.pickRandomSubstation();
+        this.demand = demand;
+    }
+
+    getDescription(): string {
+        let description = "A tornado came down, but had no effect on you.";
+        if(this.substation != null) {
+            description = "A tornado came down, and destroyed connections at a facility.";
+            if (this.outage) {
+                description += " An outage resulted.";
+            }
+        }
+        return description;
+    }
+
+    apply(): void {
+        if(this.substation != null) {
+            this.demand.calculateSatisfaction();
+            let satisfactionBefore = this.demand.satisfaction;
+
+            this.facilities.deleteConnectionsAtFacility(this.substation);
+
+            this.demand.calculateSatisfaction();
+            let satisfactionAfter = this.demand.satisfaction;
+
+            if (satisfactionAfter.unconnected > satisfactionBefore.unconnected) {
+                this.outage = true;
+            }
+        }
+    }
+
+    private pickRandomSubstation() {
+        let networks = this.facilities.powerNetwork.allSubnetworks();
+        if(networks.length === 0){
+            return null;
+        }
+        let network = networks[_.random(0, networks.length-1)];
+        if(network.substations.length === 0){
+            return null;
+        }
+        return network.substations[_.random(0, network.substations.length-1)];
+    }
+}
 //
 // class TreeFall implements RandomEvent{
 //

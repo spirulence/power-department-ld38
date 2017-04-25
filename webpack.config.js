@@ -18,7 +18,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Intro",
             filename: "index.html",
-            cutscene:"sunrise-1.webm",
+            cutscene:"intro-720p.webm",
             level: "level1.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -27,7 +27,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level2intro.html",
-            cutscene:"sunrise-1.webm",
+            cutscene:"bastards.webm",
             level: "level2.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -36,7 +36,15 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level3intro.html",
-            cutscene:"sunrise-1.webm",
+            cutscene:"warning-2.webm",
+            level: "level3intro2.html",
+            template: "app/templates/cutscene.ejs",
+            chunks: []
+        }),
+        new HtmlWebpackPlugin({
+            title: "Cutscene",
+            filename: "level3intro2.html",
+            cutscene:"ridiculous.webm",
             level: "level3.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -45,12 +53,20 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level4intro.html",
-            cutscene:"sunrise-1.webm",
+            cutscene:"we-are-close-indeed.webm",
             level: "level4.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
         }),
         new HtmlWebpackPlugin({title: 'Power Department - Level 4', filename: "level4.html"}),
+        new HtmlWebpackPlugin({
+            title: "Cutscene",
+            filename: "outro.html",
+            cutscene:"outro.webm",
+            level: "",
+            template: "app/templates/cutscene.ejs",
+            chunks: []
+        }),
         new webpack.optimize.CommonsChunkPlugin({name: 'includes', filename: 'includes.bundle.js'}),
         new ExtractTextPlugin('styles.css')
     ],
