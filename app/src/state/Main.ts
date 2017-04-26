@@ -165,9 +165,10 @@ export class Main extends Phaser.State {
 
         let map = this.map;
         let game = this.game;
+        let mapGroup = this.mapGroup;
         let mainstate = this;
         let newTransmissionLine = function(tile: Phaser.Tile){
-            let placer = new LinePlacer(map, tile);
+            let placer = new LinePlacer(map, mapGroup, tile);
             game.input.addMoveCallback(placer.moveCallback, null);
             mainstate.placer = placer;
         };
