@@ -6,11 +6,13 @@ export class LinePlacer{
     private destination: Phaser.Tile;
     private map: Phaser.Tilemap;
     private line: PowerLine;
+    private mapGroup: Phaser.Group;
 
     moveCallback: (ptr: Phaser.Pointer, x: number, y: number, _isClick: boolean)=>void;
 
-    constructor(map: Phaser.Tilemap, source: Phaser.Tile){
+    constructor(map: Phaser.Tilemap, mapGroup: Phaser.Group, source: Phaser.Tile){
         this.map = map;
+        this.mapGroup = mapGroup;
         this.source = source;
         this.destination = null;
         this.line = null;
@@ -18,8 +20,10 @@ export class LinePlacer{
         this.moveCallback = this.destMoved.bind(this)
     }
 
-    private destMoved(_ptr: Phaser.Pointer, x: number, y: number, _isClick: boolean){
-        let destinationTile = this.map.getTileWorldXY(x, y, undefined, undefined, MapLayers.BASE, true);
+    private destMoved(pointer: Phaser.Pointer, _x: number, _y: number, _isClick: boolean){
+        let coords = this.mapGroup.toLocal(pointer.position, this.mapGroup.parent);
+
+        let destinationTile = this.map.getTileWorldXY(coords.x, coords.y, undefined, undefined, MapLayers.BASE, true);
         if(destinationTile != null){
             this.clearAndRedrawTemp(destinationTile);
         }
