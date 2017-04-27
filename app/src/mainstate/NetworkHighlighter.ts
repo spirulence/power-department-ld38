@@ -11,6 +11,9 @@ interface SimplePoint {
 }
 
 export class NetworkHighlighter{
+    set mapGroup(value: Phaser.Group) {
+        this._mapGroup = value;
+    }
     set map(value: Phaser.Tilemap) {
         this._map = value;
     }
@@ -19,6 +22,7 @@ export class NetworkHighlighter{
     }
     private _facilities: Facilities;
     private _map: Phaser.Tilemap;
+    private _mapGroup: Phaser.Group;
 
     private lastHighlights: SimplePoint[];
     private lastHighlightPoint: SimplePoint;
@@ -28,8 +32,10 @@ export class NetworkHighlighter{
         this.lastHighlightPoint = {x:-1, y:-1};
     }
 
-    highlightHover(_ptr: Phaser.Pointer, x: number, y: number, _isClick: boolean) {
-        let tile = this._map.getTileWorldXY(x, y, undefined, undefined, MapLayers.TEMP_LAYER, true);
+    highlightHover(pointer: Phaser.Pointer, _x: number, _y: number, _isClick: boolean) {
+        let coords = this._mapGroup.toLocal(pointer.position, this._mapGroup.parent);
+
+        let tile = this._map.getTileWorldXY(coords.x, coords.y, undefined, undefined, MapLayers.TEMP_LAYER, true);
         if(tile == null){
             this.clearHighlights();
             return
