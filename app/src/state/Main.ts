@@ -405,7 +405,6 @@ export class Main extends Phaser.State {
         }
         this.happiness.addSatisfaction(this.demand.satisfaction, outage);
 
-        console.log(this.happiness.current().value);
         if(this.happiness.isGameOver()){
             this.gameOver("People were unhappy with you for too long.");
             return true;

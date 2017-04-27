@@ -168,9 +168,7 @@ export class HappinessCalculator{
         let happiness = this.window[0];
 
         let unconnectedAverage = this.calculateUnconnectedAverage();
-        console.log("uncon avg", unconnectedAverage);
         if (unconnectedAverage > happiness.satisfaction.unconnected) {
-            console.log("bonus!");
             happiness.value += HappinessCalculator.MORE_CONNECTIONS_BONUS;
         }
     }
