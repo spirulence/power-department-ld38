@@ -6,16 +6,7 @@
     <link href="styles.css" rel="stylesheet"></head>
 </head>
 <body>
-<video autoplay class="cutscene" id="cutscene" src="assets/<%= htmlWebpackPlugin.options.cutscene %>"></video>
-<p id="next-button" class="center-text"><a class="center-text" href="<%= htmlWebpackPlugin.options.level %>">Next Level</a></p>
-<script>
-    var video = document.getElementById("cutscene");
-    var nextButton = document.getElementById("next-button");
-    video.onended = function() {
-        if(!window.location.endsWith("outro.html")) {
-            nextButton.className += " visible";
-        }
-    };
-</script>
+<video autoplay controls onloadstart="this.volume=0.4" class="cutscene" id="cutscene" src="assets/<%= htmlWebpackPlugin.options.cutscene %>"></video>
+<p id="next-button" class="center-text visible"><a class="center-text" href="<%= htmlWebpackPlugin.options.level %>">Next Level</a></p>
 </body>
 </html>

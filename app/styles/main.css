@@ -18,6 +18,7 @@ canvas {
     height: 720px;
     margin: 5px auto;
     display: block;
+    z-index: 0;
 }
 
 .center-text {
@@ -29,6 +30,7 @@ canvas {
     top: 600px;
     width: 100%;
     display: none;
+    z-index: 1;
 }
 
 #next-button a{
