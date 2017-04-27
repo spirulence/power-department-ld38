@@ -235,6 +235,7 @@ export class Main extends Phaser.State {
         let highlighter = new NetworkHighlighter();
         highlighter.facilities = this.facilities;
         highlighter.map = this.map;
+        highlighter.mapGroup = this.mapGroup;
         this.game.input.addMoveCallback(highlighter.highlightHover, highlighter);
     }
 
