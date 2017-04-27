@@ -70,7 +70,6 @@ export class Dialogs{
 
     private createNewSubstationDialog(tile: Phaser.Tile){
         let buttons = [
-            this.createButton(DialogButtons.AddDistributionNetwork),
             this.createButton(DialogButtons.NewTransmissionLine),
         ];
 
