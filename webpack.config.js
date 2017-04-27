@@ -18,7 +18,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Intro",
             filename: "index.html",
-            cutscene:"intro-720p.webm",
+            cutscene:"video/intro-720p.webm",
             level: "level1.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -27,7 +27,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level2intro.html",
-            cutscene:"bastards.webm",
+            cutscene:"video/bastards.webm",
             level: "level2.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -36,7 +36,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level3intro.html",
-            cutscene:"warning-2.webm",
+            cutscene:"video/warning-2.webm",
             level: "level3intro2.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -44,7 +44,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level3intro2.html",
-            cutscene:"ridiculous.webm",
+            cutscene:"video/ridiculous.webm",
             level: "level3.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -53,7 +53,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level4intro.html",
-            cutscene:"we-are-close-indeed.webm",
+            cutscene:"video/we-are-close-indeed.webm",
             level: "level4.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -62,7 +62,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "outro.html",
-            cutscene:"outro.webm",
+            cutscene:"video/outro.webm",
             level: "",
             template: "app/templates/cutscene.ejs",
             chunks: []
