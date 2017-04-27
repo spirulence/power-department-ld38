@@ -4,11 +4,12 @@ import {Facilities, PowerLine, MapLayers, Facility} from "../mainstate/Facilitie
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
-import {Demand, Satisfaction} from "../mainstate/Demand";
+import {Demand} from "../mainstate/Demand";
 import * as _ from "lodash";
 import {LandPrice} from "../mainstate/LandPrice";
 import {TerrainTypes} from "../mainstate/Terrain";
 import {LevelInfo} from "./GameSetup";
+import {HappinessCalculator} from "../mainstate/Happiness";
 
 
 interface Finances {
@@ -35,9 +36,7 @@ export class Main extends Phaser.State {
     private quarter: number;
     private quarterText: Phaser.Text;
     private nextQuarterButton: SlickUI.Element.Button;
-    private happiness: number;
-    private happinessHistory: number[];
-    private satisfactionHistory: Satisfaction[];
+    private happiness: HappinessCalculator;
     private lastEvents: RandomEvent[];
     private active: boolean;
     private mapID: string;
@@ -344,7 +343,7 @@ export class Main extends Phaser.State {
         }
 
         descriptions.push("");
-        descriptions.push(this.getHappinessString());
+        descriptions.push(this.happiness.current().sentence);
         descriptions.push("");
         descriptions.push("Revenue: +"+finances.revenue);
         descriptions.push("Maintenance: -"+finances.maintenance);
@@ -392,61 +391,21 @@ export class Main extends Phaser.State {
     }
 
     private setupHappiness() {
-        this.happiness = 50.0;
-        this.happinessHistory = [];
-
-        this.satisfactionHistory = [];
-        this.satisfactionHistory.push(this.demand.satisfaction);
+        this.happiness = new HappinessCalculator(this.demand.satisfaction);
         this.lastEvents = [];
-    }
-
-    private getHappinessString() {
-        if(this.happiness > 80.0){
-            return "The people are ecstatic about your performance.";
-        }else if(this.happiness > 60.0){
-            return "The people think your performance is good.";
-        }else if(this.happiness > 40.0){
-            return "The people feel neutral about your performance.";
-        }else if(this.happiness > 20.0){
-            return "The people feel your performance is not up to par.";
-        }
-        return "Your performance is abysmal.";
     }
 
     private updateHappiness() {
         this.demand.calculateSatisfaction();
-        this.satisfactionHistory.push(this.demand.satisfaction);
-
-        if(this.satisfactionHistory.length > 3){
-            this.satisfactionHistory.shift();
-        }
-
-        let unconnectedSum = 0;
-        for(let satisfaction of this.satisfactionHistory){
-            unconnectedSum += satisfaction.unconnected;
-        }
-        let unconnectedAverage = unconnectedSum/this.satisfactionHistory.length;
-        if(this.demand.satisfaction.unconnected < unconnectedAverage){
-            this.happiness += 15;
-        }
-
+        let outage = false;
         for(let event of this.lastEvents){
             if(event.outage){
-                this.happiness -= 15;
+                outage = true;
             }
         }
+        this.happiness.addSatisfaction(this.demand.satisfaction, outage);
 
-        this.happiness -= Math.floor(this.demand.satisfaction.unreliable / 10);
-
-        this.happiness = this.happiness * 0.75 + 35.0 * 0.25;
-        this.happinessHistory.push(this.happiness);
-        if(this.happinessHistory.length > 5){
-            this.happinessHistory.shift();
-        }
-
-        let sum = this.happinessHistory.reduce(function(a, b){return a+b});
-        let average = sum / this.happinessHistory.length;
-        if(average < 38.0){
+        if(this.happiness.isGameOver()){
             this.gameOver("People were unhappy with you for too long.");
             return true;
         }

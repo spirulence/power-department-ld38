@@ -4,7 +4,7 @@ export enum Consumers{
     Residential = 3
 }
 
-export interface Satisfaction{
+export interface DemandSatisfaction{
     unconnected: number;
     unreliable: number;
     reliable: number;
@@ -23,14 +23,14 @@ export class Demand{
     private _facilities: Facilities;
     totalDemand: number;
 
-    satisfaction: Satisfaction;
+    satisfaction: DemandSatisfaction;
 
     constructor(){
         this.totalDemand = 0;
     }
 
     calculateSatisfaction(){
-        let satisfaction: Satisfaction = {
+        let satisfaction: DemandSatisfaction = {
             unconnected: 0,
             unreliable: 0,
             reliable: 0
