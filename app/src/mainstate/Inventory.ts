@@ -1,4 +1,4 @@
-export type InventoryNotifier = (inv: Inventory)=>void;
+export type InventoryNotifier = (inv: Inventory, event: string)=>void;
 
 export class Inventory{
     dollarsMillions: number;
@@ -14,23 +14,30 @@ export class Inventory{
         this.notifiers.push(callback);
     }
 
-
     enoughDollars(purchase: number){
         return (this.dollarsMillions + this.maximumDebt) >= purchase;
     }
 
     deductDollars(purchase: number) {
         this.dollarsMillions -= purchase;
-        this.notify();
+        this.notify("purchase");
     }
 
-    notify() {
+    private notify(event: string) {
         for (let callback of this.notifiers) {
-            callback(this);
+            callback(this, event);
         }
     }
 
     addDollars(addition: number) {
         this.dollarsMillions += addition;
+    }
+
+    notifyNotEnoughDollars() {
+        this.notify("notEnough");
+    }
+
+    firstNotify() {
+        this.notify("isSetup");
     }
 }
