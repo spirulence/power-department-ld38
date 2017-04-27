@@ -387,11 +387,15 @@ export class Facilities {
         let location = new VertexPoint(baseTile.x, baseTile.y, -1);
         let facility = new Facility(location, FacilityTypes.Substation, this.map);
         let price = 5 + this.landPrice.getPrice(baseTile.x, baseTile.y);
-        if (this.inventory.enoughDollars(price) && facility.isValid()) {
-            facility.draw();
-            this.inventory.deductDollars(price);
-            this.powerNetwork.addFacility(facility);
-            this.notify();
+        if (this.inventory.enoughDollars(price)){
+            if(facility.isValid()) {
+                facility.draw();
+                this.inventory.deductDollars(price);
+                this.powerNetwork.addFacility(facility);
+                this.notify();
+            }
+        }else{
+            this.inventory.notifyNotEnoughDollars();
         }
     }
 
@@ -399,11 +403,15 @@ export class Facilities {
         let location = new VertexPoint(baseTile.x, baseTile.y, -1);
         let facility = new Facility(location, FacilityTypes.Plant, this.map);
         let price = 25 + this.landPrice.getPrice(baseTile.x, baseTile.y);
-        if (this.inventory.enoughDollars(price) && facility.isValid()) {
-            facility.draw();
-            this.inventory.deductDollars(price);
-            this.powerNetwork.addFacility(facility);
-            this.notify();
+        if (this.inventory.enoughDollars(price)){
+            if(facility.isValid()) {
+                facility.draw();
+                this.inventory.deductDollars(price);
+                this.powerNetwork.addFacility(facility);
+                this.notify();
+            }
+        }else{
+            this.inventory.notifyNotEnoughDollars();
         }
     }
 
@@ -413,6 +421,8 @@ export class Facilities {
             line.drawPermanent();
             this.powerNetwork.addLine(line);
             this.notify();
+        }else{
+            this.inventory.notifyNotEnoughDollars();
         }
     }
 

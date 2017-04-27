@@ -87,10 +87,28 @@ export class Main extends Phaser.State {
         this.inventory = new Inventory(money);
         this.facilities.setInventory(this.inventory);
         let belowText = this.belowText;
-        this.inventory.addNotifier(function (inv: Inventory) {
+        let game = this.game;
+        this.inventory.addNotifier(function (inv: Inventory, event: string) {
             belowText.text = `$${inv.dollarsMillions}m`;
+            if(inv.dollarsMillions <= 0){
+                belowText.setStyle({font: "20px monospace", fill: "#f00"});
+            }else{
+                belowText.setStyle({font: "20px monospace", fill: "#fff"});
+            }
+
+            if(event == "notEnough"){
+                let blink = function(){
+                    if(belowText.alpha == 1.0){
+                        belowText.alpha = 0.0;
+                    }else{
+                        belowText.alpha = 1.0;
+                    }
+                };
+
+                game.time.events.repeat(Phaser.Timer.SECOND/8.0, 10, blink);
+            }
         });
-        this.inventory.notify();
+        this.inventory.firstNotify();
     }
 
     private setupText() {
