@@ -19,11 +19,9 @@ export class Preload extends Phaser.State {
         this.slickUI = this.game.plugins.add(Phaser.Plugin.SlickUI);
         this.slickUI.load("assets/kenney-theme/kenney.json");
 
-        this.load.audio("main_menu_music", "assets/power_main_menu_01.mp3");
         this.load.image("logo", "assets/logo.png");
 
         this.load.json("setup_text", "assets/gametext-setup.json");
-        this.load.audio("setup_music", "assets/power_department_setup.mp3");
 
         this.load.audio("main_music_01", "assets/audio/power_department_01.mp3");
         this.load.audio("main_music_02", "assets/audio/pd_chugging.mp3");
