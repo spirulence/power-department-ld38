@@ -122,6 +122,7 @@ export class Main extends Phaser.State {
 
         this.map = this.add.tilemap(this.mapID);
         this.map.addTilesetImage("tileset", "tileset");
+        this.map.addTilesetImage("grid-tile", "grid-tile");
 
         for(let imageLayer of this.map.images) {
             this.add.image(imageLayer.x, imageLayer.y, imageLayer.image, null, this.mapGroup);
@@ -129,7 +130,11 @@ export class Main extends Phaser.State {
 
         let baseLayer = this.map.createLayer(MapLayers.BASE, null, null, this.mapGroup);
         if(this.map.images.length > 0){
-            baseLayer.alpha = 0.3;
+            baseLayer.alpha = 0.0;
+
+            // assuming that maps with image layer also have grid layer..
+            let gridLayer = this.map.createLayer("grid", null, null, this.mapGroup);
+            gridLayer.alpha = 0.125;
         }
         baseLayer.inputEnabled = true;
         baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));
