@@ -4,9 +4,10 @@
   "description": "",
   "scripts": {
     "clean": "rimraf dist",
-    "assets": "mkdirp dist && ncp assets dist/assets",
+    "assets": "npm run clean && mkdirp dist && ncp assets dist/assets",
     "build": "npm run assets && webpack -p",
-    "dev-serve": "lite-server --baseDir=dist"
+    "develop": "webpack-dev-server",
+    "develop-no-server": "npm run assets && webpack"
   },
   "private": true,
   "author": {
@@ -20,7 +21,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "lite-server": "2.3.0"
+    "null-loader": "0.1.1",
+    "webpack-dev-server": "2.4.5"
   },
   "dependencies": {
     "@types/lodash": "^4.14.63",

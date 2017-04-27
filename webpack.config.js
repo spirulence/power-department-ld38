@@ -76,12 +76,25 @@ module.exports = {
         filename: 'bundle.js'
     },
 
-    devtool: 'source-map',
+    devtool: 'cheap-eval-source-map',
 
     module: {
         loaders: [
-            {test: /\.ts$/, loader: 'ts-loader'},
-            {test: /\.css$/, loader: ExtractTextPlugin.extract({fallback: 'style-loader', use: 'css-loader'})}
+            {
+                test: /\.tsx?$/,
+                loader: 'ts-loader'
+            },
+            {
+                test: /\.css$/,
+                loader: ExtractTextPlugin.extract({fallback: 'style-loader', use: 'css-loader'})},
+            {
+                test: path.resolve(__dirname, 'node_modules/webpack-dev-server/client'),
+                loader: "null-loader"
+            }
         ]
+    },
+
+    devServer:{
+        port: 9000
     }
 };
