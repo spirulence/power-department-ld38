@@ -11,6 +11,7 @@ import {TerrainTypes} from "../mainstate/Terrain";
 import {LevelInfo} from "./GameSetup";
 import {HappinessCalculator} from "../mainstate/Happiness";
 import {GameMap, MapTile} from "../mainstate/GameMap";
+import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 
 
 interface Finances {
@@ -57,7 +58,6 @@ export class Main extends Phaser.State {
         this.setupMusic();
         this.setupMap();
         this.setupQuarterCounter();
-        this.setupLandPrice();
         this.setupFacilities();
         this.setupDialogs();
         this.setupText();
@@ -169,31 +169,29 @@ export class Main extends Phaser.State {
     }
 
     private setupHover() {
-        // let highlighter = new NetworkHighlighter();
-        // highlighter.facilities = this.facilities;
-        // highlighter.map = this.map;
-        // highlighter.mapGroup = this.mapGroup;
-        // this.game.input.addMoveCallback(highlighter.highlightHover, highlighter);
+        let highlighter = new NetworkHighlighter();
+        highlighter.facilities = this.facilities;
+        highlighter.map = this.map;
     }
 
     private setupDemand() {
-        // this.demand = new Demand();
-        // this.demand.map = this.map;
-        // this.demand.facilities = this.facilities;
-        //
-        // let textStyle = {font: "20px monospace", fill: "#fff", boundsAlignH: "right"};
-        // this.demandText = this.add.text(0, 0, "", textStyle);
-        // this.demandText.setTextBounds(0,600, 1000, 25);
-        // let demandText = this.demandText;
-        //
-        // let demand = this.demand;
-        // this.facilities.addNotifier(function(_facilities: Facilities){
-        //     demand.calculateSatisfaction();
-        //     let sat = demand.satisfaction;
-        //     demandText.text = `${sat.unconnected}uncon-${sat.unreliable}unrel-${sat.reliable}rel`
-        // });
-        //
-        // this.facilities.notify();
+        this.demand = new Demand();
+        this.demand.map = this.map;
+        this.demand.facilities = this.facilities;
+
+        let textStyle = {font: "20px monospace", fill: "#fff", boundsAlignH: "right"};
+        this.demandText = this.add.text(0, 0, "", textStyle);
+        this.demandText.setTextBounds(0,600, 1000, 25);
+        let demandText = this.demandText;
+
+        let demand = this.demand;
+        this.facilities.addNotifier(function(_facilities: Facilities){
+            demand.calculateSatisfaction();
+            let sat = demand.satisfaction;
+            demandText.text = `${sat.unconnected}uncon-${sat.unreliable}unrel-${sat.reliable}rel`
+        });
+
+        this.facilities.notify();
     }
 
     private setupMusic() {
@@ -311,8 +309,8 @@ export class Main extends Phaser.State {
     }
 
     private setupHappiness() {
-        // this.happiness = new HappinessCalculator(this.demand.satisfaction);
-        // this.lastEvents = [];
+        this.happiness = new HappinessCalculator(this.demand.satisfaction);
+        this.lastEvents = [];
     }
 
     private updateHappiness() {
@@ -394,17 +392,6 @@ export class Main extends Phaser.State {
             fuel: fuel,
             interest: interest,
         };
-    }
-
-    private setupLandPrice() {
-        // this.landPrice = new LandPrice();
-        // this.landPrice.map = this.map;
-        //
-        // let priceLayer = this.priceLayer;
-        // let key = this.game.input.keyboard.addKey(Phaser.KeyCode.P);
-        // key.onUp.add(function(){
-        //     priceLayer.visible = !priceLayer.visible;
-        // });
     }
 
     private isBankrupt() {

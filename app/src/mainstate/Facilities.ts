@@ -52,11 +52,11 @@ export class Facility{
     }
 
     draw() {
-        this.map.overlays.facilities.setTile(this.location, this.type);
+        this.map.layers.facilities.setTile(this.location, this.type);
     }
 
     clear(){
-        this.map.overlays.facilities.clearTile(this.location);
+        this.map.layers.facilities.clearTile(this.location);
     }
 
     coverageArea(){
@@ -129,7 +129,7 @@ export class PowerLine{
     private draw(layer: string) {
         let coords = this.getRawCoords();
         for(let coord of coords) {
-            this.map.overlays[layer].setTile(coord, FacilityTypes.PowerLine);
+            this.map.layers[layer].setTile(coord, FacilityTypes.PowerLine);
         }
     }
 
@@ -166,7 +166,7 @@ export class PowerLine{
     private clear(layer: string) {
         let coords = this.getRawCoords();
         for(let coord of coords){
-            this.map.overlays[layer].clearTile(coord);
+            this.map.layers[layer].clearTile(coord);
         }
     }
 
@@ -432,6 +432,8 @@ export class Facilities {
         for(let line of lines){
             line.drawPermanent();
         }
+
+        this.notify();
     }
 
     setInventory(inventory: Inventory) {
@@ -451,5 +453,6 @@ export class Facilities {
         for(let line of connectedLines){
             this.deleteLine(line);
         }
+        this.notify();
     }
 }

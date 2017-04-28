@@ -24,7 +24,7 @@ export interface MapTile{
     landPrice: number
 }
 
-export class Overlay{
+export class Layer{
     private group: Phaser.Group;
     private tileset: string;
     private tilesize: number;
@@ -108,7 +108,7 @@ export class Overlay{
 }
 
 export class GameMap{
-    overlays: {[id: string]: Overlay};
+    layers: {[id: string]: Layer};
     landPrice: LandPrice;
     width: number;
     height: number;
@@ -179,7 +179,7 @@ export class GameMap{
     }
 
     private createOverlays(game: Phaser.Game) {
-        this.overlays = {};
+        this.layers = {};
 
         this.createOverlay(MapLayers.TEMPORARY, 8, game, this.mapGroup);
         this.createOverlay(MapLayers.LINES, 8, game, this.mapGroup);
@@ -192,6 +192,7 @@ export class GameMap{
         if (this.map.images.length > 0) {
             baseLayer.alpha = 0.0;
 
+            //we assume maps with images also have grid layers
             let gridLayer = this.map.createLayer("grid", null, null, this.mapGroup);
             gridLayer.alpha = 0.125;
         }
@@ -218,7 +219,7 @@ export class GameMap{
     }
 
     private createOverlay(name: string, tilesize: number, game: Phaser.Game, parent: Phaser.Group) {
-        this.overlays[name] = new Overlay(tilesize, game, parent);
+        this.layers[name] = new Layer(tilesize, game, parent);
     }
 
     addCallback(callback: MapCallback){
@@ -260,8 +261,8 @@ export class GameMap{
         return {
             location: location,
             terrain: this.map.getTile(location.x, location.y, MapLayers.BASE, true).index,
-            facility: this.overlays[MapLayers.FACILITIES].getTile(location),
-            line: this.overlays[MapLayers.LINES].getTile(location) != -1,
+            facility: this.layers[MapLayers.FACILITIES].getTile(location),
+            line: this.layers[MapLayers.LINES].getTile(location) != -1,
             landPrice: this.landPrice.getPrice(location.x, location.y)
         };
     }

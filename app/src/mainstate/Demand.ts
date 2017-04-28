@@ -1,4 +1,5 @@
 import {Facilities, SubNetwork} from "./Facilities";
+import {GameMap} from "./GameMap";
 
 export enum Consumers{
     Residential = 3
@@ -14,12 +15,12 @@ export class Demand{
     set facilities(value: Facilities) {
         this._facilities = value;
     }
-    set map(value: Phaser.Tilemap) {
+    set map(value: GameMap) {
         this._map = value;
         this.calculateTotalDemand();
     }
 
-    private _map: Phaser.Tilemap;
+    private _map: GameMap;
     private _facilities: Facilities;
     totalDemand: number;
 
@@ -64,8 +65,8 @@ export class Demand{
         this.totalDemand = 0;
         for(let row = 0; row < this._map.height; row++){
             for(let column = 0; column < this._map.width; column++) {
-                let tile = this._map.getTile(column, row, "base", true);
-                if (tile.index === Consumers.Residential) {
+                let tile = this._map.getTile({x: column, y:row});
+                if (tile.terrain === Consumers.Residential) {
                     this.totalDemand += 5;
                 }
             }
@@ -76,8 +77,8 @@ export class Demand{
         let demand = 0;
         for(let substation of subNetwork.substations){
             for(let covered of substation.coverageArea()){
-                let tile = this._map.getTile(covered.x, covered.y, "base", true).index;
-                if(tile === Consumers.Residential){
+                let tile = this._map.getTile(covered);
+                if(tile.terrain === Consumers.Residential){
                     demand += 5;
                 }
             }
