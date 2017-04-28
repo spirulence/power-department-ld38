@@ -1,17 +1,15 @@
 ///<reference path="../defs/definitions.d.ts"/>
-import {Dialogs, DialogButtons} from "../interface/Dialogs";
 import {Facilities, PowerLine, Facility} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
-import {LinePlacer} from "../mainstate/LinePlacer";
-// import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 import {Demand} from "../mainstate/Demand";
 import * as _ from "lodash";
 import {LandPrice} from "../mainstate/LandPrice";
-import {TerrainTypes} from "../mainstate/Terrain";
 import {LevelInfo} from "./GameSetup";
 import {HappinessCalculator} from "../mainstate/Happiness";
 import {GameMap, MapTile} from "../mainstate/GameMap";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
+import {Builder, GeneratorBuilder, SubstationBuilder} from "../mainstate/Builders";
+import {BuildingPanel} from "../mainstate/BuildingPanel";
 
 
 interface Finances {
@@ -24,12 +22,10 @@ interface Finances {
 export class Main extends Phaser.State {
     map: GameMap;
     facilities: Facilities;
-    dialogs: Dialogs;
     inventory: Inventory;
     landPrice: LandPrice;
 
     private belowText: Phaser.Text;
-    private placer: LinePlacer;
     private demand: Demand;
     private demandText: Phaser.Text;
     private slickUI: any;
@@ -43,6 +39,7 @@ export class Main extends Phaser.State {
     private active: boolean;
     private mapID: string;
     private nextCutscene: string;
+    private buildingPanel: BuildingPanel;
 
 
     init(slickUI: any, difficulty: string, level: LevelInfo){
@@ -125,37 +122,37 @@ export class Main extends Phaser.State {
     }
 
     private setupDialogs() {
-        this.dialogs = new Dialogs(this.game);
-
-        let addSubstation = this.facilities.addSubstation.bind(this.facilities);
-        this.dialogs.addAction(DialogButtons.NewSubstation, addSubstation);
-
-        let addPlant = this.facilities.addPlant.bind(this.facilities);
-        this.dialogs.addAction(DialogButtons.NewPlant, addPlant);
-
-        let map = this.map;
-        let facilities = this.facilities;
-        let mainstate = this;
-        let newTransmissionLine = function(tile: MapTile){
-            let placer = new LinePlacer(map, facilities, tile);
-            mainstate.placer = placer;
-            placer.onFinish = function(){
-                mainstate.placer = null;
-            };
-        };
-        this.dialogs.addAction(DialogButtons.NewTransmissionLine, newTransmissionLine);
+        // this.dialogs = new Dialogs(this.game);
+        //
+        // let addSubstation = this.facilities.addSubstation.bind(this.facilities);
+        // this.dialogs.addAction(DialogButtons.NewSubstation, addSubstation);
+        //
+        // let addPlant = this.facilities.addPlant.bind(this.facilities);
+        // this.dialogs.addAction(DialogButtons.NewPlant, addPlant);
+        //
+        // let map = this.map;
+        // let facilities = this.facilities;
+        // let mainstate = this;
+        // let newTransmissionLine = function(tile: MapTile){
+        //     let placer = new LinePlacer(map, facilities, tile);
+        //     mainstate.placer = placer;
+        //     placer.onFinish = function(){
+        //         mainstate.placer = null;
+        //     };
+        // };
+        // this.dialogs.addAction(DialogButtons.NewTransmissionLine, newTransmissionLine);
     }
 
-    private clickBaseLayer(tile: MapTile){
-        let terrainGood = tile.terrain != TerrainTypes.Mountain && tile.terrain != TerrainTypes.Water;
-
-        if(this.nextQuarterButton.visible === true && this.active && terrainGood) {
-            if (this.placer == null) {
-                this.dialogs.powerTileClicked(tile, this.map.toScreen(tile.location));
-            } else {
-                this.placer = null;
-            }
-        }
+    private clickBaseLayer(_tile: MapTile){
+        // let terrainGood = tile.terrain != TerrainTypes.Mountain && tile.terrain != TerrainTypes.Water;
+        //
+        // if(this.nextQuarterButton.visible === true && this.active && terrainGood) {
+        //     if (this.placer == null) {
+        //         this.dialogs.powerTileClicked(tile, this.map.toScreen(tile.location));
+        //     } else {
+        //         this.placer = null;
+        //     }
+        // }
     }
 
     shutdown(){
@@ -220,6 +217,15 @@ export class Main extends Phaser.State {
         nextQuarter.add(new SlickUI.Element.Text(0, 0, "Next Quarter")).center();
         nextQuarter.events.onInputUp.add(this.advanceQuarter, this);
         this.nextQuarterButton = nextQuarter;
+
+        let builders: {[id:string]: Builder} = {
+            ["generator_panel"]: new GeneratorBuilder(this.map, this.facilities),
+            ["substation_panel"]: new SubstationBuilder(this.map, this.facilities)
+        };
+        this.map.addCallback(builders["generator_panel"]);
+        this.map.addCallback(builders["substation_panel"]);
+        this.buildingPanel = new BuildingPanel(this.game, builders);
+        this.world.add(this.buildingPanel.group);
     }
 
     private advanceQuarter() {

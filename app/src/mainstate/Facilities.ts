@@ -35,15 +35,29 @@ export class VertexPoint {
 }
 
 export class Facility{
+    price: number;
     location: VertexPoint;
     type: FacilityTypes;
 
-    private map: GameMap;
+    initialCosts:{
+        "materials": number,
+        "land": number,
+        "workers": number
+    };
+
+    quarterlyCosts:{
+        "fuel": number,
+        "upkeep": number
+    };
+
+    protected map: GameMap;
 
     constructor(location: VertexPoint, type: FacilityTypes, map: GameMap){
         this.location = location;
         this.type = type;
         this.map = map;
+
+        this.setupCosts();
     }
 
     isValid(){
@@ -52,9 +66,11 @@ export class Facility{
         for(let x = -range; x<= range; x++){
             for(let y = -range; y<=range; y++){
                 let location = {x: x+this.location.x, y: y+this.location.y};
-                let facility = this.map.getTile(location).facility;
-                if(facility != FacilityTypes.Nothing){
-                    return false;
+                if(this.map.hasTile(location)) {
+                    let facility = this.map.getTile(location).facility;
+                    if (facility != FacilityTypes.Nothing) {
+                        return false;
+                    }
                 }
             }
         }
@@ -66,8 +82,41 @@ export class Facility{
         this.map.layers.facilities.setTile(this.location, this.type);
     }
 
+    drawTemp(){
+        this.map.layers.temporary.setTile(this.location, this.type);
+    }
+
     clear(){
         this.map.layers.facilities.clearTile(this.location);
+    }
+
+    clearTemp(){
+        this.map.layers.temporary.clearTile(this.location);
+    }
+
+    coverageArea():VertexPoint[]{
+        return [];
+    }
+
+    setupCosts() {
+        this.initialCosts = {
+            "materials": 0,
+            "land": 0,
+            "workers": 0
+        };
+        this.initialCosts.land = this.map.getTile(this.location).landPrice;
+
+        this.quarterlyCosts = {
+            "fuel": 0,
+            "upkeep": 0
+        }
+    }
+}
+
+export class Substation extends Facility{
+
+    constructor(location: VertexPoint, map: GameMap){
+        super(location, FacilityTypes.Substation, map);
     }
 
     coverageArea(){
@@ -82,6 +131,42 @@ export class Facility{
         }
 
         return coverage;
+    }
+
+    setupCosts(){
+        super.setupCosts();
+
+        this.initialCosts.materials = 5;
+        this.initialCosts.workers = 2;
+
+        this.quarterlyCosts.upkeep = 2;
+    }
+
+    speculate() {
+        this.initialCosts.land = this.map.getTile(this.location).landPrice;
+        this.price = this.initialCosts.materials + this.initialCosts.land;
+    }
+}
+
+export class Plant extends Facility{
+
+    constructor(location: VertexPoint, map: GameMap){
+        super(location, FacilityTypes.Plant, map);
+    }
+
+    setupCosts(){
+        super.setupCosts();
+
+        this.initialCosts.materials = 25;
+        this.initialCosts.workers = 5;
+
+        this.quarterlyCosts.fuel = 10;
+        this.quarterlyCosts.upkeep = 5;
+    }
+
+    speculate() {
+        this.initialCosts.land = this.map.getTile(this.location).landPrice;
+        this.price = this.initialCosts.materials + this.initialCosts.land;
     }
 }
 
@@ -404,15 +489,12 @@ export class Facilities {
         }
     }
 
-    addPlant(tile: MapTile) {
-        let location = new VertexPoint(tile.location.x, tile.location.y, -1);
-        let facility = new Facility(location, FacilityTypes.Plant, this.map);
-        let price = 25 + tile.landPrice;
-        if (this.inventory.enoughDollars(price)){
-            if(facility.isValid()) {
-                facility.draw();
-                this.inventory.deductDollars(price);
-                this.powerNetwork.addFacility(facility);
+    addPlant(plant: Plant) {
+        if (this.inventory.enoughDollars(plant.price)){
+            if(plant.isValid()) {
+                plant.draw();
+                this.inventory.deductDollars(plant.price);
+                this.powerNetwork.addFacility(plant);
                 this.notify();
             }
         }else{
@@ -456,6 +538,8 @@ export class Facilities {
     }
 
     isFacilityAt(coord: VertexPoint) {
+        // return false;
+        console.log(this.map.getTile(coord).facility);
         return this.map.getTile(coord).facility != FacilityTypes.Nothing;
     }
 

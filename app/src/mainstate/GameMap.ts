@@ -9,7 +9,7 @@ import {FacilityTypes} from "./Facilities";
  */
 export class MapLayers{
     public static readonly BASE = "base";
-    public static readonly TEMPORARY = "temp";
+    public static readonly TEMPORARY = "temporary";
     public static readonly LINES = "lines";
     public static readonly FACILITIES = "facilities";
     public static readonly HIGHLIGHTS = "highlights";
@@ -353,6 +353,21 @@ export class GameMap{
         let pixelY = tile.y * 8;
         let point = this.mapGroup.toGlobal(new Phaser.Point(pixelX, pixelY));
         return new Phaser.Point(point.x, point.y);
+    }
+
+    /**
+     * Returns true if there is a tile at that tile location. False otherwise.
+     * @param location
+     * @returns {boolean}
+     */
+    hasTile(location:{x:number, y:number}){
+        if(location.x < 0 || location.x >= this.width){
+            return false;
+        }
+        if(location.y < 0 || location.y >= this.height){
+            return false;
+        }
+        return true;
     }
 
     /**

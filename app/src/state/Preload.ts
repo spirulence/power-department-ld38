@@ -33,6 +33,11 @@ export class Preload extends Phaser.State {
 
         this.load.image("game_over", "assets/game_over.png");
         this.load.image("you_win", "assets/you_win.png");
+
+        this.load.image("generator_panel", "assets/interface/generator_panel.png");
+        this.load.image("generator_panel_below", "assets/interface/generator_panel_below.png");
+        this.load.image("substation_panel", "assets/interface/substation_panel.png");
+        this.load.image("line_panel", "assets/interface/line_panel.png");
     }
 
     create() {
