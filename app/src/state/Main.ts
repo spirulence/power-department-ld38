@@ -10,6 +10,7 @@ import {LandPrice} from "../mainstate/LandPrice";
 import {TerrainTypes} from "../mainstate/Terrain";
 import {LevelInfo} from "./GameSetup";
 import {HappinessCalculator} from "../mainstate/Happiness";
+import {BuildingPanel} from "../interface/BuildingPanel";
 
 
 interface Finances {
@@ -44,6 +45,7 @@ export class Main extends Phaser.State {
     private priceLayer: Phaser.TilemapLayer;
     private mapGroup: Phaser.Group;
     private scrollSpeed: number;
+    private buildingPanel: BuildingPanel;
 
     init(slickUI: any, difficulty: string, level: LevelInfo){
         this.slickUI = slickUI;
@@ -302,6 +304,9 @@ export class Main extends Phaser.State {
         nextQuarter.add(new SlickUI.Element.Text(0, 0, "Next Quarter")).center();
         nextQuarter.events.onInputUp.add(this.advanceQuarter, this);
         this.nextQuarterButton = nextQuarter;
+
+        this.buildingPanel = new BuildingPanel(this.slickUI, this.game);
+        this.world.add(this.buildingPanel.group);
     }
 
     private advanceQuarter() {
