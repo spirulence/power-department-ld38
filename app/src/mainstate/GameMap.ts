@@ -2,6 +2,11 @@ import {LandPrice} from "./LandPrice";
 import {TerrainTypes} from "./Terrain";
 import {FacilityTypes} from "./Facilities";
 
+/**
+ * Convenient strings for working with the different map layers available.
+ *
+ * Note that "base" is in here, but isn't accessible directly like the others.
+ */
 export class MapLayers{
     public static readonly BASE = "base";
     public static readonly TEMPORARY = "temp";
@@ -11,11 +16,17 @@ export class MapLayers{
     public static readonly LAND_PRICE = "land_price";
 }
 
+/**
+ * Interface for other code to get notified when tiles are clicked or hovered on map.
+ */
 export interface MapCallback{
     mapClicked(tile: MapTile):void;
     mapHovered(tile: MapTile):void;
 }
 
+/**
+ * A view of a single tile that cuts across layers and presents most information in one place.
+ */
 export interface MapTile{
     location: {x: number, y: number},
     terrain: TerrainTypes,
@@ -24,10 +35,20 @@ export interface MapTile{
     landPrice: number
 }
 
+/**
+ * A cheaper way of representing a tile layer, using dynamically resizing arrays of sprites instead.
+ */
 export class Layer{
+    /**
+     * Sometimes, you want to make layers non-visible. This helps.
+     * @returns {boolean}
+     */
     get visible(): boolean {
         return this._visible;
     }
+    /**
+     * Sometimes, you want to make layers non-visible. This helps.
+     */
     set visible(value: boolean) {
         this._visible = value;
         this.group.visible = value;
@@ -41,6 +62,15 @@ export class Layer{
     private _visible: boolean;
 
 
+    /**
+     * Create a new Layer. Needs a few references to work right.
+     *
+     * Uses a tileset called "overlay-tiles" for all tile images. Make sure you load it.
+     *
+     * @param tilesize Assumes that tiles are square, this is length of a side.
+     * @param game Needs this reference to add objects to the game world.
+     * @param parent Usually the group that contains all the other layers.
+     */
     constructor(tilesize: number, game: Phaser.Game, parent: Phaser.Group){
         this.game = game;
         this.group = game.add.group(parent);
@@ -51,6 +81,11 @@ export class Layer{
         this.unusedSprites = [];
     }
 
+    /**
+     * Set the tile at the specified location to some tile.
+     * @param location Location, in tile coordinates, to set.
+     * @param tile An index into the tileset. Note that to match Tiled, we actually set index+1 to get correct result.
+     */
     setTile(location: {x: number; y: number}, tile: number){
         let pixelX = location.x * this.tilesize;
         let pixelY = location.y * this.tilesize;
@@ -78,6 +113,10 @@ export class Layer{
         }
     }
 
+    /**
+     * Clear the tile at the specified location.
+     * @param location Location, in tile coordinates, to clear
+     */
     clearTile(location: {x: number; y: number}){
         let pixelX = location.x * this.tilesize;
         let pixelY = location.y * this.tilesize;
@@ -103,6 +142,12 @@ export class Layer{
     //     this.group.cacheAsBitmap = null;
     //     this.group.cacheAsBitmap = true;
     // }
+
+    /**
+     * Get the tile index at a specific location.
+     * @param location the location to query
+     * @returns {number} the tile index, -1 if no tile is there.
+     */
     getTile(location: {x: number; y: number}) {
         let pixelX = location.x * this.tilesize;
         let pixelY = location.y * this.tilesize;
@@ -116,10 +161,26 @@ export class Layer{
     }
 }
 
+/**
+ * An abstraction on top of a Phaser.Tilemap for convenience. Adds methods to view all layers of one tile at the
+ * same time. Handles zooming and scrolling, and mouse input events.
+ */
 export class GameMap{
+    /**
+     * References to the individual layers by name.
+     */
     layers: {[id: string]: Layer};
+    /**
+     * The land prices for this map.
+     */
     landPrice: LandPrice;
+    /**
+     * Width in tiles of this map.
+     */
     width: number;
+    /**
+     * Height in tiles of this map.
+     */
     height: number;
 
     private map: Phaser.Tilemap;
@@ -129,6 +190,11 @@ export class GameMap{
     private game: Phaser.Game;
     private scrollSpeed: number;
 
+    /**
+     * Create a tilemap with a given ID in the given game world.
+     * @param game
+     * @param mapID
+     */
     constructor(game: Phaser.Game, mapID: string){
         this.callbacks = [];
 
@@ -241,11 +307,17 @@ export class GameMap{
         this.layers[name] = new Layer(tilesize, game, parent);
     }
 
+    /**
+     * Add a callback to be notified when tiles are hovered or clicked.
+     * @param callback
+     */
     addCallback(callback: MapCallback){
         this.callbacks.push(callback);
     }
 
-    clickCallback(_layer: any, pointer: Phaser.Pointer){
+    //method called when baseLayer recieves a click
+    //notifies any callbacks added
+    private clickCallback(_layer: any, pointer: Phaser.Pointer){
         let coords = this.mapGroup.toLocal(pointer.position, this.mapGroup.parent);
         let baseTiile = this.map.getTileWorldXY(coords.x, coords.y, undefined, undefined, MapLayers.BASE, true);
 
@@ -257,7 +329,9 @@ export class GameMap{
         }
     }
 
-    moveCallback(pointer: Phaser.Pointer, _x: number, _y:number, isClick: boolean){
+    //method called when mouse moves in game, we try to figure out if it's on the map
+    //and notify the appropriate code.
+    private moveCallback(pointer: Phaser.Pointer, _x: number, _y:number, isClick: boolean){
         let coords = this.mapGroup.toLocal(pointer.position, this.mapGroup.parent);
         let baseTile = this.map.getTileWorldXY(coords.x, coords.y, undefined, undefined, MapLayers.BASE, true);
 
@@ -269,6 +343,11 @@ export class GameMap{
         }
     }
 
+    /**
+     * Transform tile coordinates into screen coordinates. No guarantee that they fall within screen boundaries.
+     * @param tile
+     * @returns {Phaser.Point}
+     */
     toScreen(tile: {x: number, y:number}){
         let pixelX = tile.x * 8;
         let pixelY = tile.y * 8;
@@ -276,6 +355,11 @@ export class GameMap{
         return new Phaser.Point(point.x, point.y);
     }
 
+    /**
+     * Get the MapTile at a certain location. Cuts across layers to summarize information.
+     * @param location
+     * @returns {MapTile}
+     */
     getTile(location: {x: number; y: number}) {
         return {
             location: location,
@@ -286,6 +370,10 @@ export class GameMap{
         };
     }
 
+    /**
+     * Remove a callback added with @addCallback so that if won't be notified anymore.
+     * @param callback
+     */
     removeCallback(callback: {mapHovered: any; mapClicked: any}) {
         let index = 0;
         let found = false;
@@ -299,12 +387,16 @@ export class GameMap{
         this.callbacks.splice(index, 1);
     }
 
+    /**
+     * We need to be updated to scroll the map properly.
+     */
     update() {
         if(this.isZoomedIn()){
             this.scrollMap();
         }
     }
 
+    //scroll the map according to set scroll speed, but don't scroll past map boundaries.
     private scrollMap() {
         if (this.game.input.keyboard.isDown(Phaser.KeyCode.LEFT)) {
             this.mapGroup.position.x += this.scrollSpeed;
@@ -322,6 +414,7 @@ export class GameMap{
         this.mapGroup.position.clampY(-(this.mapGroup.height - this.game.world.height), 0);
     }
 
+    //convenience method that determines whether or not we're zoomed in
     private isZoomedIn() {
         return this.mapGroup.scale.x != 1;
     }
