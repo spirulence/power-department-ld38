@@ -1,4 +1,5 @@
-import {Facilities, SubNetwork, VertexPoint, Facility, MapLayers} from "./Facilities";
+import {Facilities, SubNetwork, VertexPoint, Facility, FacilityTypes} from "./Facilities";
+import {GameMap, MapTile} from "./GameMap";
 
 export enum Highlights{
     Powered = 8,
@@ -14,14 +15,18 @@ export class NetworkHighlighter{
     set mapGroup(value: Phaser.Group) {
         this._mapGroup = value;
     }
-    set map(value: Phaser.Tilemap) {
+    set map(value: GameMap) {
         this._map = value;
+        this._map.addCallback({
+            mapHovered: this.highlightHover.bind(this),
+            mapClicked: function(){}
+        })
     }
     set facilities(value: Facilities) {
         this._facilities = value;
     }
     private _facilities: Facilities;
-    private _map: Phaser.Tilemap;
+    private _map: GameMap;
     private _mapGroup: Phaser.Group;
 
     private lastHighlights: SimplePoint[];
@@ -32,16 +37,13 @@ export class NetworkHighlighter{
         this.lastHighlightPoint = {x:-1, y:-1};
     }
 
-    highlightHover(pointer: Phaser.Pointer, _x: number, _y: number, _isClick: boolean) {
-        let coords = this._mapGroup.toLocal(pointer.position, this._mapGroup.parent);
-
-        let tile = this._map.getTileWorldXY(coords.x, coords.y, undefined, undefined, MapLayers.TEMP_LAYER, true);
-        if(tile == null){
+    highlightHover(tile: MapTile) {
+        if(tile.facility == FacilityTypes.Nothing){
             this.clearHighlights();
             return
         }
 
-        let coord = {x: tile.x, y: tile.y};
+        let coord = {x: tile.location.x, y: tile.location.y};
 
         if(coord.x === this.lastHighlightPoint.x && coord.y === this.lastHighlightPoint.y){
             return
@@ -64,14 +66,14 @@ export class NetworkHighlighter{
 
     private highlightDistribution(substation: Facility) {
         for (let covered of substation.coverageArea()) {
-            this._map.putTile(Highlights.Powered, covered.x, covered.y, MapLayers.HIGHLIGHTS);
+            this._map.layers.highlights.setTile(covered, Highlights.Powered);
             this.lastHighlights.push(covered);
         }
     }
 
     private clearHighlights() {
         for(let highlight of this.lastHighlights){
-            this._map.putTile(null, highlight.x, highlight.y, MapLayers.HIGHLIGHTS)
+            this._map.layers.highlights.clearTile(highlight);
         }
         this.lastHighlights = [];
     }

@@ -1,40 +1,40 @@
-import {Facilities, PowerLine, VertexPoint, MapLayers} from "./Facilities";
+import {Facilities, PowerLine, VertexPoint} from "./Facilities";
+import {GameMap, MapTile} from "./GameMap";
 
 
 export class LinePlacer{
-    private source: Phaser.Tile;
-    private destination: Phaser.Tile;
-    private map: Phaser.Tilemap;
+    private source: MapTile;
+    private destination: MapTile;
+    private map: GameMap;
     private line: PowerLine;
-    private mapGroup: Phaser.Group;
+    private facilities: Facilities;
+    onFinish: () => void;
+    private callback: {mapHovered: any; mapClicked: any};
 
-    moveCallback: (ptr: Phaser.Pointer, x: number, y: number, _isClick: boolean)=>void;
-
-    constructor(map: Phaser.Tilemap, mapGroup: Phaser.Group, source: Phaser.Tile){
+    constructor(map: GameMap, facilities: Facilities, source: MapTile){
         this.map = map;
-        this.mapGroup = mapGroup;
+        this.facilities = facilities;
         this.source = source;
         this.destination = null;
         this.line = null;
 
-        this.moveCallback = this.destMoved.bind(this)
+        this.callback = {
+            mapHovered: this.destMoved.bind(this),
+            mapClicked: this.clickCallback.bind(this)
+        };
+        this.map.addCallback(this.callback);
     }
 
-    private destMoved(pointer: Phaser.Pointer, _x: number, _y: number, _isClick: boolean){
-        let coords = this.mapGroup.toLocal(pointer.position, this.mapGroup.parent);
-
-        let destinationTile = this.map.getTileWorldXY(coords.x, coords.y, undefined, undefined, MapLayers.BASE, true);
-        if(destinationTile != null){
-            this.clearAndRedrawTemp(destinationTile);
-        }
+    private destMoved(tile: MapTile){
+        this.clearAndRedrawTemp(tile);
     }
 
-    private clearAndRedrawTemp(destination: Phaser.Tile) {
+    private clearAndRedrawTemp(destination: MapTile) {
         this.clearTemporaryLayer();
 
         this.line = new PowerLine(
-            new VertexPoint(this.source.x, this.source.y, -1),
-            new VertexPoint(destination.x, destination.y, -1),
+            new VertexPoint(this.source.location.x, this.source.location.y, -1),
+            new VertexPoint(destination.location.x, destination.location.y, -1),
             this.map);
 
         this.line.drawTemporary()
@@ -46,11 +46,13 @@ export class LinePlacer{
         }
     }
 
-    clickCallback(powerTile: Phaser.Tile, facilities: Facilities) {
-        this.clearAndRedrawTemp(powerTile);
+    clickCallback(tile: MapTile) {
+        this.clearAndRedrawTemp(tile);
         this.clearTemporaryLayer();
+        this.onFinish();
+        this.map.removeCallback(this.callback);
         if(this.line.isValid()) {
-            facilities.purchaseLine(this.line);
+            this.facilities.purchaseLine(this.line);
         }
     }
 }

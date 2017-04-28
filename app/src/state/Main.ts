@@ -1,15 +1,17 @@
 ///<reference path="../defs/definitions.d.ts"/>
 import {Dialogs, DialogButtons} from "../interface/Dialogs";
-import {Facilities, PowerLine, MapLayers, Facility} from "../mainstate/Facilities";
+import {Facilities, PowerLine, Facility} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
 import {LinePlacer} from "../mainstate/LinePlacer";
-import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
+// import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 import {Demand} from "../mainstate/Demand";
 import * as _ from "lodash";
 import {LandPrice} from "../mainstate/LandPrice";
 import {TerrainTypes} from "../mainstate/Terrain";
 import {LevelInfo} from "./GameSetup";
 import {HappinessCalculator} from "../mainstate/Happiness";
+import {GameMap, MapTile} from "../mainstate/GameMap";
+import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 
 
 interface Finances {
@@ -20,7 +22,7 @@ interface Finances {
 }
 
 export class Main extends Phaser.State {
-    map: Phaser.Tilemap;
+    map: GameMap;
     facilities: Facilities;
     dialogs: Dialogs;
     inventory: Inventory;
@@ -41,10 +43,7 @@ export class Main extends Phaser.State {
     private active: boolean;
     private mapID: string;
     private nextCutscene: string;
-    private priceLayer: Phaser.TilemapLayer;
-    private baseLayer: Phaser.TilemapLayer;
-    private mapGroup: Phaser.Group;
-    private scrollSpeed: number;
+
 
     init(slickUI: any, difficulty: string, level: LevelInfo){
         this.slickUI = slickUI;
@@ -55,12 +54,10 @@ export class Main extends Phaser.State {
 
     create() {
         this.active = true;
-        this.scrollSpeed = 4;
 
         this.setupMusic();
         this.setupMap();
         this.setupQuarterCounter();
-        this.setupLandPrice();
         this.setupFacilities();
         this.setupDialogs();
         this.setupText();
@@ -119,67 +116,12 @@ export class Main extends Phaser.State {
     private setupMap() {
         this.stage.smoothed = false;
 
-        this.mapGroup = this.add.group();
+        this.map = new GameMap(this.game, this.mapID);
 
-        this.map = this.add.tilemap(this.mapID);
-        this.map.addTilesetImage("tileset", "tileset");
-        this.map.addTilesetImage("grid-tile", "grid-tile");
-
-        for(let imageLayer of this.map.images) {
-            this.add.image(imageLayer.x, imageLayer.y, imageLayer.image, null, this.mapGroup);
-        }
-
-        let baseLayer = this.map.createLayer(MapLayers.BASE, null, null, this.mapGroup);
-        if(this.map.images.length > 0){
-            baseLayer.alpha = 0.0;
-
-            // assuming that maps with image layer also have grid layer..
-            let gridLayer = this.map.createLayer("grid", null, null, this.mapGroup);
-            gridLayer.alpha = 0.125;
-        }
-        baseLayer.inputEnabled = true;
-        baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));
-        let toggleBaseKey = this.game.input.keyboard.addKey(Phaser.KeyCode.M);
-        toggleBaseKey.onUp.add(function(){
-            baseLayer.alpha = 1.0-baseLayer.alpha;
+        this.map.addCallback({
+            mapClicked: this.clickBaseLayer.bind(this),
+            mapHovered: function(){}
         });
-        this.baseLayer = baseLayer;
-
-        this.map.createBlankLayer(MapLayers.TEMP_LAYER, 125, 75, 8, 8, this.mapGroup);
-        this.map.createBlankLayer(MapLayers.LINES_LAYER, 125, 75, 8, 8, this.mapGroup);
-        this.map.createBlankLayer(MapLayers.FACILITIES_LAYER, 125, 75, 8, 8, this.mapGroup);
-        this.map.createBlankLayer(MapLayers.HIGHLIGHTS, 125, 75, 8, 8, this.mapGroup);
-        this.priceLayer = this.map.createBlankLayer(MapLayers.LAND_PRICE, 125, 75, 8, 8, this.mapGroup);
-        this.priceLayer.visible = false;
-
-        let centeredX = -(this.mapGroup.width*2 - this.world.width)/2;
-        let centeredY = -(this.mapGroup.height*2 - this.world.height)/2;
-        let mapGroup = this.mapGroup;
-
-        let zoomIn = function(){
-            if(mapGroup.scale.x != 2) {
-                mapGroup.scale.set(2);
-                mapGroup.position.set(centeredX, centeredY);
-            }
-        };
-
-        let zoomOut = function(){
-            if(mapGroup.scale.x != 1) {
-                mapGroup.scale.set(1);
-                mapGroup.position.set(0);
-            }
-        };
-
-        this.input.keyboard.addKey(Phaser.KeyCode.ONE).onUp.add(zoomIn);
-        this.input.keyboard.addKey(Phaser.KeyCode.TWO).onUp.add(zoomOut);
-        let mouse = this.input.mouse;
-        this.input.mouse.mouseWheelCallback = function(){
-            if(mouse.wheelDelta == Phaser.Mouse.WHEEL_DOWN){
-                zoomIn();
-            }else{
-                zoomOut();
-            }
-        }
     }
 
     private setupDialogs() {
@@ -192,35 +134,25 @@ export class Main extends Phaser.State {
         this.dialogs.addAction(DialogButtons.NewPlant, addPlant);
 
         let map = this.map;
-        let game = this.game;
-        let mapGroup = this.mapGroup;
+        let facilities = this.facilities;
         let mainstate = this;
-        let newTransmissionLine = function(tile: Phaser.Tile){
-            let placer = new LinePlacer(map, mapGroup, tile);
-            game.input.addMoveCallback(placer.moveCallback, null);
+        let newTransmissionLine = function(tile: MapTile){
+            let placer = new LinePlacer(map, facilities, tile);
             mainstate.placer = placer;
+            placer.onFinish = function(){
+                mainstate.placer = null;
+            };
         };
         this.dialogs.addAction(DialogButtons.NewTransmissionLine, newTransmissionLine);
     }
 
-    private clickBaseLayer(_mapLayer: Phaser.TilemapLayer, pointer: Phaser.Pointer){
-        let coords = this.mapGroup.toLocal(pointer.position, this.world);
-
-        let powerTile = this.map.getTileWorldXY(
-            coords.x, coords.y,
-            undefined, undefined, MapLayers.FACILITIES_LAYER, true);
-        let baseTile = this.map.getTileWorldXY(
-            coords.x, coords.y,
-            undefined, undefined, MapLayers.BASE, true);
-
-        let terrainGood = baseTile.index != TerrainTypes.Mountain && baseTile.index != TerrainTypes.Water;
+    private clickBaseLayer(tile: MapTile){
+        let terrainGood = tile.terrain != TerrainTypes.Mountain && tile.terrain != TerrainTypes.Water;
 
         if(this.nextQuarterButton.visible === true && this.active && terrainGood) {
             if (this.placer == null) {
-                this.dialogs.powerTileClicked(powerTile, pointer);
+                this.dialogs.powerTileClicked(tile, this.map.toScreen(tile.location));
             } else {
-                this.placer.clickCallback(powerTile, this.facilities);
-                this.game.input.deleteMoveCallback(this.placer.moveCallback, null);
                 this.placer = null;
             }
         }
@@ -233,38 +165,13 @@ export class Main extends Phaser.State {
 
 
     update() {
-        if(this.isZoomedIn()){
-            this.scrollMap();
-        }
-    }
-
-    private scrollMap() {
-        if (this.input.keyboard.isDown(Phaser.KeyCode.LEFT)) {
-            this.mapGroup.position.x += this.scrollSpeed;
-        }
-        if (this.input.keyboard.isDown(Phaser.KeyCode.RIGHT)) {
-            this.mapGroup.position.x -= this.scrollSpeed;
-        }
-        if (this.input.keyboard.isDown(Phaser.KeyCode.UP)) {
-            this.mapGroup.position.y += this.scrollSpeed;
-        }
-        if (this.input.keyboard.isDown(Phaser.KeyCode.DOWN)) {
-            this.mapGroup.position.y -= this.scrollSpeed;
-        }
-        this.mapGroup.position.clampX(-(this.mapGroup.width - this.world.width), 0);
-        this.mapGroup.position.clampY(-(this.mapGroup.height - this.world.height), 0);
-    }
-
-    private isZoomedIn() {
-        return this.mapGroup.scale.x != 1;
+        this.map.update();
     }
 
     private setupHover() {
         let highlighter = new NetworkHighlighter();
         highlighter.facilities = this.facilities;
         highlighter.map = this.map;
-        highlighter.mapGroup = this.mapGroup;
-        this.game.input.addMoveCallback(highlighter.highlightHover, highlighter);
     }
 
     private setupDemand() {
@@ -485,17 +392,6 @@ export class Main extends Phaser.State {
             fuel: fuel,
             interest: interest,
         };
-    }
-
-    private setupLandPrice() {
-        this.landPrice = new LandPrice();
-        this.landPrice.map = this.map;
-
-        let priceLayer = this.priceLayer;
-        let key = this.game.input.keyboard.addKey(Phaser.KeyCode.P);
-        key.onUp.add(function(){
-            priceLayer.visible = !priceLayer.visible;
-        });
     }
 
     private isBankrupt() {

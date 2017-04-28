@@ -1,5 +1,6 @@
 import {ContextDialog} from "./ContextDialog";
 import {FacilityTypes} from "../mainstate/Facilities";
+import {MapTile} from "../mainstate/GameMap";
 
 
 export const enum DialogButtons {
@@ -9,7 +10,7 @@ export const enum DialogButtons {
     AddDistributionNetwork = 6
 }
 
-export type TileAction = (tile: Phaser.Tile)=>void;
+export type TileAction = (tile: MapTile)=>void;
 
 export interface DialogAction {
     image: number;
@@ -30,16 +31,16 @@ export class Dialogs{
         this.actions.push({image: button, callback: action});
     }
 
-    powerTileClicked(tile: Phaser.Tile, pointer: Phaser.Pointer){
+    powerTileClicked(tile: MapTile, pointer: {x:number, y:number}){
         this.closeActiveDialog();
         this.activeDialog = this.createDialog(tile);
         if(this.activeDialog != null){
-            this.activeDialog.setPosition(pointer.position.clone());
+            this.activeDialog.setPosition(new Phaser.Point(pointer.x, pointer.y));
         }
     }
 
-    private createDialog(tile: Phaser.Tile): ContextDialog {
-        switch (tile.index) {
+    private createDialog(tile: MapTile): ContextDialog {
+        switch (tile.facility) {
             case FacilityTypes.Substation:
                 return this.createNewSubstationDialog(tile);
             case FacilityTypes.Nothing:
@@ -59,7 +60,7 @@ export class Dialogs{
         return {hover: image+1, normal: image, onPress: this.findAction(image)}
     }
 
-    private createNewBuildingDialog(tile: Phaser.Tile){
+    private createNewBuildingDialog(tile: MapTile){
         let buttons = [
             this.createButton(DialogButtons.NewSubstation),
             this.createButton(DialogButtons.NewPlant),
@@ -68,7 +69,7 @@ export class Dialogs{
         return new ContextDialog(buttons, this.game, tile);
     }
 
-    private createNewSubstationDialog(tile: Phaser.Tile){
+    private createNewSubstationDialog(tile: MapTile){
         let buttons = [
             this.createButton(DialogButtons.NewTransmissionLine),
         ];

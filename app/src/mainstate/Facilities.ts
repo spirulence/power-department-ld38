@@ -3,6 +3,7 @@ import {Graph} from "../utils/Graph";
 import {bresenhamLine} from "../utils/Bresenham";
 import {LandPrice} from "./LandPrice";
 import {TerrainTypes} from "./Terrain";
+import {MapLayers, MapTile, GameMap} from "./GameMap";
 
 export enum FacilityTypes{
     Nothing = -1,
@@ -11,14 +12,7 @@ export enum FacilityTypes{
     PowerLine = 7
 }
 
-export class MapLayers{
-    public static readonly BASE = "base";
-    public static readonly TEMP_LAYER = "temp";
-    public static readonly LINES_LAYER = "lines";
-    public static readonly FACILITIES_LAYER = "facilities";
-    public static readonly HIGHLIGHTS = "highlights";
-    public static readonly LAND_PRICE = "land_price";
-}
+
 
 export class VertexPoint {
     x: number;
@@ -44,25 +38,25 @@ export class Facility{
     location: VertexPoint;
     type: FacilityTypes;
 
-    private map: Phaser.Tilemap;
+    private map: GameMap;
 
-    constructor(location: VertexPoint, type: FacilityTypes, map: Phaser.Tilemap){
+    constructor(location: VertexPoint, type: FacilityTypes, map: GameMap){
         this.location = location;
         this.type = type;
         this.map = map;
     }
 
     isValid(){
-        let currentTile = this.map.getTile(this.location.x, this.location.y, MapLayers.FACILITIES_LAYER, true);
-        return currentTile.index === FacilityTypes.Nothing;
+        let facility = this.map.getTile(this.location).facility;
+        return facility === FacilityTypes.Nothing;
     }
 
     draw() {
-        this.map.putTile(this.type, this.location.x, this.location.y, MapLayers.FACILITIES_LAYER);
+        this.map.layers.facilities.setTile(this.location, this.type);
     }
 
     clear(){
-        this.map.putTile(this.type, this.location.x, this.location.y, MapLayers.FACILITIES_LAYER);
+        this.map.layers.facilities.clearTile(this.location);
     }
 
     coverageArea(){
@@ -85,9 +79,9 @@ export class PowerLine{
     to: VertexPoint;
     cost: number;
 
-    private map: Phaser.Tilemap;
+    private map: GameMap;
 
-    constructor(from: VertexPoint, to: VertexPoint, map: Phaser.Tilemap){
+    constructor(from: VertexPoint, to: VertexPoint, map: GameMap){
         if(from.toArrayCoordinate(map.width) > to.toArrayCoordinate(map.width)){
             this.from = to;
             this.to = from;
@@ -109,19 +103,19 @@ export class PowerLine{
     }
 
     drawPermanent(){
-        this.draw(MapLayers.LINES_LAYER);
+        this.draw(MapLayers.LINES);
     }
 
     clearPermanent(){
-        this.clear(MapLayers.LINES_LAYER);
+        this.clear(MapLayers.LINES);
     }
 
     drawTemporary(){
-        this.draw(MapLayers.TEMP_LAYER);
+        this.draw(MapLayers.TEMPORARY);
     }
 
     clearTemporary(){
-        this.clear(MapLayers.TEMP_LAYER);
+        this.clear(MapLayers.TEMPORARY);
     }
 
     hash(){
@@ -135,7 +129,7 @@ export class PowerLine{
     private draw(layer: string) {
         let coords = this.getRawCoords();
         for(let coord of coords) {
-            this.map.putTile(FacilityTypes.PowerLine, coord.x, coord.y, layer);
+            this.map.layers[layer].setTile(coord, FacilityTypes.PowerLine);
         }
     }
 
@@ -156,7 +150,7 @@ export class PowerLine{
     //             continue;
     //         }
     //
-    //         let tileType = map.getTile(coord.x, coord.y, MapLayers.FACILITIES_LAYER, true).index;
+    //         let tileType = map.getTile(coord.x, coord.y, MapLayers.FACILITIES, true).index;
     //
     //         if(tileType !== FacilityTypes.Nothing){
     //             return true;
@@ -172,17 +166,17 @@ export class PowerLine{
     private clear(layer: string) {
         let coords = this.getRawCoords();
         for(let coord of coords){
-            this.map.putTile(null, coord.x, coord.y, layer);
+            this.map.layers[layer].clearTile(coord);
         }
     }
 
     private terrainCost(coords: {x:number, y:number}[]) {
         let extraCost = 0;
         for(let coord of coords){
-            let tileIndex = this.map.getTile(coord.x, coord.y, "base", true).index;
-            if(tileIndex == TerrainTypes.Mountain){
+            let terrain = this.map.getTile(coord).terrain;
+            if(terrain == TerrainTypes.Mountain){
                 extraCost += 5;
-            }else if(tileIndex == TerrainTypes.Water){
+            }else if(terrain == TerrainTypes.Water){
                 extraCost += 3;
             }
         }
@@ -190,7 +184,7 @@ export class PowerLine{
     }
 
     private facilityAt(point: VertexPoint) {
-        return this.map.getTile(point.x, point.y, MapLayers.FACILITIES_LAYER, true).index != FacilityTypes.Nothing;
+        return this.map.getTile(point).facility != FacilityTypes.Nothing;
     }
 }
 
@@ -359,7 +353,7 @@ export class PowerNetwork {
 export type FacilitiesNotifier = (facilities: Facilities)=>void;
 
 export class Facilities {
-    private map: Phaser.Tilemap;
+    private map: GameMap;
     private inventory: Inventory;
     private notifiers: FacilitiesNotifier[];
 
@@ -367,7 +361,7 @@ export class Facilities {
     private landPrice: LandPrice;
 
 
-    constructor(map: Phaser.Tilemap) {
+    constructor(map: GameMap) {
         this.map = map;
         this.powerNetwork = new PowerNetwork();
         this.notifiers = [];
@@ -383,10 +377,10 @@ export class Facilities {
         }
     }
 
-    addSubstation(baseTile: Phaser.Tile) {
-        let location = new VertexPoint(baseTile.x, baseTile.y, -1);
+    addSubstation(tile: MapTile) {
+        let location = new VertexPoint(tile.location.x, tile.location.y, -1);
         let facility = new Facility(location, FacilityTypes.Substation, this.map);
-        let price = 5 + this.landPrice.getPrice(baseTile.x, baseTile.y);
+        let price = 5 + tile.landPrice;
         if (this.inventory.enoughDollars(price)){
             if(facility.isValid()) {
                 facility.draw();
@@ -399,10 +393,10 @@ export class Facilities {
         }
     }
 
-    addPlant(baseTile: Phaser.Tile) {
-        let location = new VertexPoint(baseTile.x, baseTile.y, -1);
+    addPlant(tile: MapTile) {
+        let location = new VertexPoint(tile.location.x, tile.location.y, -1);
         let facility = new Facility(location, FacilityTypes.Plant, this.map);
-        let price = 25 + this.landPrice.getPrice(baseTile.x, baseTile.y);
+        let price = 25 + tile.landPrice;
         if (this.inventory.enoughDollars(price)){
             if(facility.isValid()) {
                 facility.draw();
@@ -438,6 +432,8 @@ export class Facilities {
         for(let line of lines){
             line.drawPermanent();
         }
+
+        this.notify();
     }
 
     setInventory(inventory: Inventory) {
@@ -449,7 +445,7 @@ export class Facilities {
     }
 
     isFacilityAt(coord: VertexPoint) {
-        return this.map.getTile(coord.x, coord.y, MapLayers.FACILITIES_LAYER, true).index != FacilityTypes.Nothing;
+        return this.map.getTile(coord).facility != FacilityTypes.Nothing;
     }
 
     deleteConnectionsAtFacility(facility: Facility) {
@@ -457,5 +453,6 @@ export class Facilities {
         for(let line of connectedLines){
             this.deleteLine(line);
         }
+        this.notify();
     }
 }
