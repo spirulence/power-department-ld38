@@ -13,9 +13,9 @@ export enum FacilityTypes{
 
 export class MapLayers{
     public static readonly BASE = "base";
-    public static readonly TEMP_LAYER = "temp";
-    public static readonly LINES_LAYER = "lines";
-    public static readonly FACILITIES_LAYER = "facilities";
+    public static readonly TEMPORARY = "temp";
+    public static readonly LINES = "lines";
+    public static readonly FACILITIES = "facilities";
     public static readonly HIGHLIGHTS = "highlights";
     public static readonly LAND_PRICE = "land_price";
 }
@@ -53,16 +53,16 @@ export class Facility{
     }
 
     isValid(){
-        let currentTile = this.map.getTile(this.location.x, this.location.y, MapLayers.FACILITIES_LAYER, true);
+        let currentTile = this.map.getTile(this.location.x, this.location.y, MapLayers.FACILITIES, true);
         return currentTile.index === FacilityTypes.Nothing;
     }
 
     draw() {
-        this.map.putTile(this.type, this.location.x, this.location.y, MapLayers.FACILITIES_LAYER);
+        this.map.putTile(this.type, this.location.x, this.location.y, MapLayers.FACILITIES);
     }
 
     clear(){
-        this.map.putTile(this.type, this.location.x, this.location.y, MapLayers.FACILITIES_LAYER);
+        this.map.putTile(this.type, this.location.x, this.location.y, MapLayers.FACILITIES);
     }
 
     coverageArea(){
@@ -109,19 +109,19 @@ export class PowerLine{
     }
 
     drawPermanent(){
-        this.draw(MapLayers.LINES_LAYER);
+        this.draw(MapLayers.LINES);
     }
 
     clearPermanent(){
-        this.clear(MapLayers.LINES_LAYER);
+        this.clear(MapLayers.LINES);
     }
 
     drawTemporary(){
-        this.draw(MapLayers.TEMP_LAYER);
+        this.draw(MapLayers.TEMPORARY);
     }
 
     clearTemporary(){
-        this.clear(MapLayers.TEMP_LAYER);
+        this.clear(MapLayers.TEMPORARY);
     }
 
     hash(){
@@ -156,7 +156,7 @@ export class PowerLine{
     //             continue;
     //         }
     //
-    //         let tileType = map.getTile(coord.x, coord.y, MapLayers.FACILITIES_LAYER, true).index;
+    //         let tileType = map.getTile(coord.x, coord.y, MapLayers.FACILITIES, true).index;
     //
     //         if(tileType !== FacilityTypes.Nothing){
     //             return true;
@@ -190,7 +190,7 @@ export class PowerLine{
     }
 
     private facilityAt(point: VertexPoint) {
-        return this.map.getTile(point.x, point.y, MapLayers.FACILITIES_LAYER, true).index != FacilityTypes.Nothing;
+        return this.map.getTile(point.x, point.y, MapLayers.FACILITIES, true).index != FacilityTypes.Nothing;
     }
 }
 
@@ -449,7 +449,7 @@ export class Facilities {
     }
 
     isFacilityAt(coord: VertexPoint) {
-        return this.map.getTile(coord.x, coord.y, MapLayers.FACILITIES_LAYER, true).index != FacilityTypes.Nothing;
+        return this.map.getTile(coord.x, coord.y, MapLayers.FACILITIES, true).index != FacilityTypes.Nothing;
     }
 
     deleteConnectionsAtFacility(facility: Facility) {

@@ -1,16 +1,14 @@
 ///<reference path="../defs/definitions.d.ts"/>
-import {Dialogs, DialogButtons} from "../interface/Dialogs";
-import {Facilities, PowerLine, MapLayers, Facility} from "../mainstate/Facilities";
+// import {Dialogs, DialogButtons} from "../interface/Dialogs";
+import {Facilities, PowerLine, Facility} from "../mainstate/Facilities";
 import {Inventory} from "../mainstate/Inventory";
-import {LinePlacer} from "../mainstate/LinePlacer";
-import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 import {Demand} from "../mainstate/Demand";
 import * as _ from "lodash";
-import {LandPrice} from "../mainstate/LandPrice";
-import {TerrainTypes} from "../mainstate/Terrain";
 import {LevelInfo} from "./GameSetup";
 import {HappinessCalculator} from "../mainstate/Happiness";
 import {BuildingPanel} from "../interface/BuildingPanel";
+import {GameMap} from "../mainstate/GameMap";
+import {Builder, GeneratorBuilder, SubstationBuilder} from "../mainstate/Builders";
 
 
 interface Finances {
@@ -21,14 +19,11 @@ interface Finances {
 }
 
 export class Main extends Phaser.State {
-    map: Phaser.Tilemap;
+    map: GameMap;
     facilities: Facilities;
-    dialogs: Dialogs;
     inventory: Inventory;
-    landPrice: LandPrice;
 
     private belowText: Phaser.Text;
-    private placer: LinePlacer;
     private demand: Demand;
     private demandText: Phaser.Text;
     private slickUI: any;
@@ -42,7 +37,6 @@ export class Main extends Phaser.State {
     private active: boolean;
     private mapID: string;
     private nextCutscene: string;
-    private priceLayer: Phaser.TilemapLayer;
     private mapGroup: Phaser.Group;
     private scrollSpeed: number;
     private buildingPanel: BuildingPanel;
@@ -73,149 +67,99 @@ export class Main extends Phaser.State {
     }
 
     private setupFacilities() {
-        this.facilities = new Facilities(this.map);
-        this.facilities.setLandPrice(this.landPrice);
+        // this.facilities = new Facilities(this.map);
+        // this.facilities.setLandPrice(this.landPrice);
     }
 
     private setupInventory() {
-        let money = 250;
-        if(this.difficulty == "medium"){
-            money = 125;
-        }else if(this.difficulty == "hard"){
-            money = 50;
-        }
-
-        this.inventory = new Inventory(money);
-        this.facilities.setInventory(this.inventory);
-        let belowText = this.belowText;
-        let game = this.game;
-        this.inventory.addNotifier(function (inv: Inventory, event: string) {
-            belowText.text = `$${inv.dollarsMillions}m`;
-            if(inv.dollarsMillions <= 0){
-                belowText.setStyle({font: "20px monospace", fill: "#f00"});
-            }else{
-                belowText.setStyle({font: "20px monospace", fill: "#fff"});
-            }
-
-            if(event == "notEnough"){
-                let blink = function(){
-                    if(belowText.alpha == 1.0){
-                        belowText.alpha = 0.0;
-                    }else{
-                        belowText.alpha = 1.0;
-                    }
-                };
-
-                game.time.events.repeat(Phaser.Timer.SECOND/8.0, 10, blink);
-            }
-        });
-        this.inventory.firstNotify();
+        // let money = 250;
+        // if(this.difficulty == "medium"){
+        //     money = 125;
+        // }else if(this.difficulty == "hard"){
+        //     money = 50;
+        // }
+        //
+        // this.inventory = new Inventory(money);
+        // // this.facilities.setInventory(this.inventory);
+        // let belowText = this.belowText;
+        // let game = this.game;
+        // this.inventory.addNotifier(function (inv: Inventory, event: string) {
+        //     belowText.text = `$${inv.dollarsMillions}m`;
+        //     if(inv.dollarsMillions <= 0){
+        //         belowText.setStyle({font: "20px monospace", fill: "#f00"});
+        //     }else{
+        //         belowText.setStyle({font: "20px monospace", fill: "#fff"});
+        //     }
+        //
+        //     if(event == "notEnough"){
+        //         let blink = function(){
+        //             if(belowText.alpha == 1.0){
+        //                 belowText.alpha = 0.0;
+        //             }else{
+        //                 belowText.alpha = 1.0;
+        //             }
+        //         };
+        //
+        //         game.time.events.repeat(Phaser.Timer.SECOND/8.0, 10, blink);
+        //     }
+        // });
+        // this.inventory.firstNotify();
     }
 
     private setupText() {
-        let textStyle = {font: "20px monospace", fill: "#fff"};
-        this.belowText = this.add.text(0, 600, "", textStyle);
+        // let textStyle = {font: "20px monospace", fill: "#fff"};
+        // this.belowText = this.add.text(0, 600, "", textStyle);
     }
 
     private setupMap() {
         this.stage.smoothed = false;
 
-        this.mapGroup = this.add.group();
-
-        this.map = this.add.tilemap(this.mapID);
-        this.map.addTilesetImage("tileset", "tileset");
-
-        for(let imageLayer of this.map.images) {
-            this.add.image(imageLayer.x, imageLayer.y, imageLayer.image, null, this.mapGroup);
-        }
-
-        let baseLayer = this.map.createLayer(MapLayers.BASE, null, null, this.mapGroup);
-        if(this.map.images.length > 0){
-            baseLayer.alpha = 0.3;
-        }
-        baseLayer.inputEnabled = true;
-        baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));
-
-        this.map.createBlankLayer(MapLayers.TEMP_LAYER, 125, 75, 8, 8, this.mapGroup);
-        this.map.createBlankLayer(MapLayers.LINES_LAYER, 125, 75, 8, 8, this.mapGroup);
-        this.map.createBlankLayer(MapLayers.FACILITIES_LAYER, 125, 75, 8, 8, this.mapGroup);
-        this.map.createBlankLayer(MapLayers.HIGHLIGHTS, 125, 75, 8, 8, this.mapGroup);
-        this.priceLayer = this.map.createBlankLayer(MapLayers.LAND_PRICE, 125, 75, 8, 8, this.mapGroup);
-        this.priceLayer.visible = false;
-
-        let centeredX = -(this.mapGroup.width*2 - this.world.width)/2;
-        let centeredY = -(this.mapGroup.height*2 - this.world.height)/2;
-        let mapGroup = this.mapGroup;
-
-        let zoomIn = function(){
-            if(mapGroup.scale.x != 2) {
-                mapGroup.scale.set(2);
-                mapGroup.position.set(centeredX, centeredY);
-            }
-        };
-
-        let zoomOut = function(){
-            if(mapGroup.scale.x != 1) {
-                mapGroup.scale.set(1);
-                mapGroup.position.set(0);
-            }
-        };
-
-        this.input.keyboard.addKey(Phaser.KeyCode.ONE).onUp.add(zoomIn);
-        this.input.keyboard.addKey(Phaser.KeyCode.TWO).onUp.add(zoomOut);
-        let mouse = this.input.mouse;
-        this.input.mouse.mouseWheelCallback = function(){
-            if(mouse.wheelDelta == Phaser.Mouse.WHEEL_DOWN){
-                zoomIn();
-            }else{
-                zoomOut();
-            }
-        }
+        this.map = new GameMap(this.game, this.mapID);
     }
 
     private setupDialogs() {
-        this.dialogs = new Dialogs(this.game);
-
-        let addSubstation = this.facilities.addSubstation.bind(this.facilities);
-        this.dialogs.addAction(DialogButtons.NewSubstation, addSubstation);
-
-        let addPlant = this.facilities.addPlant.bind(this.facilities);
-        this.dialogs.addAction(DialogButtons.NewPlant, addPlant);
-
-        let map = this.map;
-        let game = this.game;
-        let mapGroup = this.mapGroup;
-        let mainstate = this;
-        let newTransmissionLine = function(tile: Phaser.Tile){
-            let placer = new LinePlacer(map, mapGroup, tile);
-            game.input.addMoveCallback(placer.moveCallback, null);
-            mainstate.placer = placer;
-        };
-        this.dialogs.addAction(DialogButtons.NewTransmissionLine, newTransmissionLine);
+        // this.dialogs = new Dialogs(this.game);
+        //
+        // let addSubstation = this.facilities.addSubstation.bind(this.facilities);
+        // this.dialogs.addAction(DialogButtons.NewSubstation, addSubstation);
+        //
+        // let addPlant = this.facilities.addPlant.bind(this.facilities);
+        // this.dialogs.addAction(DialogButtons.NewPlant, addPlant);
+        //
+        // let map = this.map;
+        // let game = this.game;
+        // let mapGroup = this.mapGroup;
+        // let mainstate = this;
+        // let newTransmissionLine = function(tile: Phaser.Tile){
+        //     let placer = new LinePlacer(map, mapGroup, tile);
+        //     game.input.addMoveCallback(placer.moveCallback, null);
+        //     mainstate.placer = placer;
+        // };
+        // this.dialogs.addAction(DialogButtons.NewTransmissionLine, newTransmissionLine);
     }
 
-    private clickBaseLayer(_mapLayer: Phaser.TilemapLayer, pointer: Phaser.Pointer){
-        let coords = this.mapGroup.toLocal(pointer.position, this.world);
-
-        let powerTile = this.map.getTileWorldXY(
-            coords.x, coords.y,
-            undefined, undefined, MapLayers.FACILITIES_LAYER, true);
-        let baseTile = this.map.getTileWorldXY(
-            coords.x, coords.y,
-            undefined, undefined, MapLayers.BASE, true);
-
-        let terrainGood = baseTile.index != TerrainTypes.Mountain && baseTile.index != TerrainTypes.Water;
-
-        if(this.nextQuarterButton.visible === true && this.active && terrainGood) {
-            if (this.placer == null) {
-                this.dialogs.powerTileClicked(powerTile, pointer);
-            } else {
-                this.placer.clickCallback(powerTile, this.facilities);
-                this.game.input.deleteMoveCallback(this.placer.moveCallback, null);
-                this.placer = null;
-            }
-        }
-    }
+    // private clickBaseLayer(_mapLayer: Phaser.TilemapLayer, pointer: Phaser.Pointer){
+    //     let coords = this.mapGroup.toLocal(pointer.position, this.world);
+    //
+    //     let powerTile = this.map.getTileWorldXY(
+    //         coords.x, coords.y,
+    //         undefined, undefined, MapLayers.FACILITIES, true);
+    //     let baseTile = this.map.getTileWorldXY(
+    //         coords.x, coords.y,
+    //         undefined, undefined, MapLayers.BASE, true);
+    //
+    //     let terrainGood = baseTile.index != TerrainTypes.Mountain && baseTile.index != TerrainTypes.Water;
+    //
+    //     if(this.nextQuarterButton.visible === true && this.active && terrainGood) {
+    //         if (this.placer == null) {
+    //             // this.dialogs.powerTileClicked(powerTile, pointer);
+    //         } else {
+    //             this.placer.clickCallback(powerTile, this.facilities);
+    //             this.game.input.deleteMoveCallback(this.placer.moveCallback, null);
+    //             this.placer = null;
+    //         }
+    //     }
+    // }
 
     shutdown(){
         this.active = false;
@@ -247,55 +191,55 @@ export class Main extends Phaser.State {
     }
 
     private isZoomedIn() {
-        return this.mapGroup.scale.x != 1;
+        return false;
     }
 
     private setupHover() {
-        let highlighter = new NetworkHighlighter();
-        highlighter.facilities = this.facilities;
-        highlighter.map = this.map;
-        highlighter.mapGroup = this.mapGroup;
-        this.game.input.addMoveCallback(highlighter.highlightHover, highlighter);
+        // let highlighter = new NetworkHighlighter();
+        // highlighter.facilities = this.facilities;
+        // highlighter.map = this.map;
+        // highlighter.mapGroup = this.mapGroup;
+        // this.game.input.addMoveCallback(highlighter.highlightHover, highlighter);
     }
 
     private setupDemand() {
-        this.demand = new Demand();
-        this.demand.map = this.map;
-        this.demand.facilities = this.facilities;
-
-        let textStyle = {font: "20px monospace", fill: "#fff", boundsAlignH: "right"};
-        this.demandText = this.add.text(0, 0, "", textStyle);
-        this.demandText.setTextBounds(0,600, 1000, 25);
-        let demandText = this.demandText;
-
-        let demand = this.demand;
-        this.facilities.addNotifier(function(_facilities: Facilities){
-            demand.calculateSatisfaction();
-            let sat = demand.satisfaction;
-            demandText.text = `${sat.unconnected}uncon-${sat.unreliable}unrel-${sat.reliable}rel`
-        });
-
-        this.facilities.notify();
+        // this.demand = new Demand();
+        // this.demand.map = this.map;
+        // this.demand.facilities = this.facilities;
+        //
+        // let textStyle = {font: "20px monospace", fill: "#fff", boundsAlignH: "right"};
+        // this.demandText = this.add.text(0, 0, "", textStyle);
+        // this.demandText.setTextBounds(0,600, 1000, 25);
+        // let demandText = this.demandText;
+        //
+        // let demand = this.demand;
+        // this.facilities.addNotifier(function(_facilities: Facilities){
+        //     demand.calculateSatisfaction();
+        //     let sat = demand.satisfaction;
+        //     demandText.text = `${sat.unconnected}uncon-${sat.unreliable}unrel-${sat.reliable}rel`
+        // });
+        //
+        // this.facilities.notify();
     }
 
     private setupMusic() {
-        this.music = [];
-        this.music.push(this.add.audio("main_music_01"));
-        this.music.push(this.add.audio("main_music_02"));
-        this.music.push(this.add.audio("main_music_03"));
-
-        let music = this.music;
-        function playSong(){
-            let index = _.random(0, music.length - 1);
-            let chosen = music[index];
-            chosen.play(null, 0, 0.1);
-        }
-
-        for(let track of music){
-            track.onStop.add(playSong);
-        }
-
-        this.music[0].onDecoded.add(playSong);
+        // this.music = [];
+        // this.music.push(this.add.audio("main_music_01"));
+        // this.music.push(this.add.audio("main_music_02"));
+        // this.music.push(this.add.audio("main_music_03"));
+        //
+        // let music = this.music;
+        // function playSong(){
+        //     let index = _.random(0, music.length - 1);
+        //     let chosen = music[index];
+        //     chosen.play(null, 0, 0.1);
+        // }
+        //
+        // for(let track of music){
+        //     track.onStop.add(playSong);
+        // }
+        //
+        // this.music[0].onDecoded.add(playSong);
     }
 
     private setupUI() {
@@ -305,7 +249,13 @@ export class Main extends Phaser.State {
         nextQuarter.events.onInputUp.add(this.advanceQuarter, this);
         this.nextQuarterButton = nextQuarter;
 
-        this.buildingPanel = new BuildingPanel(this.slickUI, this.game);
+        let builders: {[id:string]: Builder} = {
+            ["generator_panel"]: new GeneratorBuilder(this.map, this.facilities),
+            ["substation_panel"]: new SubstationBuilder(this.map, this.facilities)
+        };
+        this.map.addCallback(builders["generator_panel"]);
+        this.map.addCallback(builders["substation_panel"]);
+        this.buildingPanel = new BuildingPanel(this.game, builders);
         this.world.add(this.buildingPanel.group);
     }
 
@@ -396,8 +346,8 @@ export class Main extends Phaser.State {
     }
 
     private setupHappiness() {
-        this.happiness = new HappinessCalculator(this.demand.satisfaction);
-        this.lastEvents = [];
+        // this.happiness = new HappinessCalculator(this.demand.satisfaction);
+        // this.lastEvents = [];
     }
 
     private updateHappiness() {
@@ -482,14 +432,14 @@ export class Main extends Phaser.State {
     }
 
     private setupLandPrice() {
-        this.landPrice = new LandPrice();
-        this.landPrice.map = this.map;
-
-        let priceLayer = this.priceLayer;
-        let key = this.game.input.keyboard.addKey(Phaser.KeyCode.P);
-        key.onUp.add(function(){
-            priceLayer.visible = !priceLayer.visible;
-        });
+        // this.landPrice = new LandPrice();
+        // this.landPrice.map = this.map;
+        //
+        // let priceLayer = this.priceLayer;
+        // let key = this.game.input.keyboard.addKey(Phaser.KeyCode.P);
+        // key.onUp.add(function(){
+        //     priceLayer.visible = !priceLayer.visible;
+        // });
     }
 
     private isBankrupt() {
