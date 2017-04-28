@@ -38,12 +38,16 @@ class IndividualPanel{
 
         let group = game.add.group(parent);
         group.position.set(this.closedPosition, 0);
-        group.add(game.add.image(0, y, panel_key));
+        let abovePanel = game.add.image(0, y, panel_key);
+        abovePanel.inputEnabled = true;
+        group.add(abovePanel);
         this.aboveGroup = group;
 
         let belowPanelGroup = game.add.group(parent);
+        let belowPanel = game.add.image(0, 0, "generator_panel_below");
+        belowPanel.inputEnabled = true;
         belowPanelGroup.position.set(1000, 140);
-        belowPanelGroup.add(game.add.image(0, 0, "generator_panel_below"));
+        belowPanelGroup.add(belowPanel);
         this.belowGroup = belowPanelGroup;
 
         let style = {font: "20px monospace", fill: "#000", boundsAlignV:"bottom", boundsAlignH:"right"};

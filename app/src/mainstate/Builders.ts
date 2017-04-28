@@ -28,9 +28,10 @@ class BaseBuilder implements Builder{
     fuelCost: number;
     upkeepCost: number;
 
+    protected lastLocation: {x: number; y: number};
+
     private isReady: boolean;
     private map: GameMap;
-    private lastLocation: {x: number; y: number};
     private isOpen: boolean;
     private readyCallback: () => void;
     private changeCallback: () => void;
@@ -101,7 +102,8 @@ class BaseBuilder implements Builder{
     }
 
     completeAffirmative(){
-
+        this.clearLast();
+        this.build();
     }
 
     onReady(callback: () => void){
@@ -113,7 +115,9 @@ class BaseBuilder implements Builder{
     }
 
     protected clearLast() {
-        this.map.overlays[MapLayers.TEMPORARY].clearTile(this.lastLocation.x, this.lastLocation.y);
+        if(this.lastLocation != null) {
+            this.map.overlays[MapLayers.TEMPORARY].clearTile(this.lastLocation.x, this.lastLocation.y);
+        }
     }
 
     protected putTile(mapTile: {x: number; y: number}) {
@@ -122,11 +126,15 @@ class BaseBuilder implements Builder{
     }
 
     protected updateCost() {
-        this.landCost = this.map.prices.getPrice(this.lastLocation.x, this.lastLocation.y);
+        this.landCost = this.map.landPrice.getPrice(this.lastLocation.x, this.lastLocation.y);
     }
 
     protected tileType() {
         return 0;
+    }
+
+    protected build() {
+
     }
 }
 
@@ -142,8 +150,8 @@ export class GeneratorBuilder extends BaseBuilder{
         this.upkeepCost = 5;
     }
 
-    completeAffirmative(){
-
+    protected build(){
+        this.facilities.addPlant(this.lastLocation);
     }
 
     protected tileType(){
@@ -163,8 +171,8 @@ export class SubstationBuilder extends BaseBuilder{
         this.upkeepCost = 2;
     }
 
-    completeAffirmative(){
-        // this.facilities.addSubstation()
+    protected build(){
+        this.facilities.addSubstation(this.lastLocation);
     }
 
     protected tileType(){

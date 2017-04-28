@@ -3,6 +3,7 @@ import {Graph} from "../utils/Graph";
 import {bresenhamLine} from "../utils/Bresenham";
 import {LandPrice} from "./LandPrice";
 import {TerrainTypes} from "./Terrain";
+import {GameMap} from "./GameMap";
 
 export enum FacilityTypes{
     Nothing = -1,
@@ -359,7 +360,7 @@ export class PowerNetwork {
 export type FacilitiesNotifier = (facilities: Facilities)=>void;
 
 export class Facilities {
-    private map: Phaser.Tilemap;
+    private map: GameMap;
     private inventory: Inventory;
     private notifiers: FacilitiesNotifier[];
 
@@ -367,7 +368,7 @@ export class Facilities {
     private landPrice: LandPrice;
 
 
-    constructor(map: Phaser.Tilemap) {
+    constructor(map: GameMap) {
         this.map = map;
         this.powerNetwork = new PowerNetwork();
         this.notifiers = [];
@@ -383,7 +384,7 @@ export class Facilities {
         }
     }
 
-    addSubstation(baseTile: Phaser.Tile) {
+    addSubstation(baseTile: {x:number, y:number}) {
         let location = new VertexPoint(baseTile.x, baseTile.y, -1);
         let facility = new Facility(location, FacilityTypes.Substation, this.map);
         let price = 5 + this.landPrice.getPrice(baseTile.x, baseTile.y);
@@ -399,7 +400,7 @@ export class Facilities {
         }
     }
 
-    addPlant(baseTile: Phaser.Tile) {
+    addPlant(baseTile: {x:number, y:number}) {
         let location = new VertexPoint(baseTile.x, baseTile.y, -1);
         let facility = new Facility(location, FacilityTypes.Plant, this.map);
         let price = 25 + this.landPrice.getPrice(baseTile.x, baseTile.y);

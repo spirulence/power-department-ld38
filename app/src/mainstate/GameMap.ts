@@ -79,7 +79,7 @@ export class Overlay{
 
 export class GameMap{
     overlays: {[id: string]: Overlay};
-    prices: LandPrice;
+    landPrice: LandPrice;
 
     private map: Phaser.Tilemap;
     private mapGroup: Phaser.Group;
@@ -87,6 +87,8 @@ export class GameMap{
 
     constructor(game: Phaser.Game, mapID: string){
         this.callbacks = [];
+
+        game.input.addMoveCallback(this.moveCallback, this);
 
         this.mapGroup = game.add.group();
 
@@ -132,8 +134,8 @@ export class GameMap{
     }
 
     private createPrices() {
-        this.prices = new LandPrice();
-        this.prices.map = this.map;
+        this.landPrice = new LandPrice();
+        this.landPrice.map = this.map;
     }
 
     private createOverlays(game: Phaser.Game) {
@@ -147,11 +149,11 @@ export class GameMap{
 
     private setupBaseLayer() {
         let baseLayer = this.map.createLayer(MapLayers.BASE, null, null, this.mapGroup);
-        // if (this.map.images.length > 0) {
-        //     baseLayer.visible = false;
-        // }
+        if (this.map.images.length > 0) {
+            baseLayer.alpha = 0.0;
+        }
         baseLayer.inputEnabled = true;
-        baseLayer.events.onInputOver.add(this.moveCallback.bind(this));
+        baseLayer.events.onInputDown.add(this.clickCallback.bind(this));
     }
 
     private addImageLayers(game: Phaser.Game) {
@@ -172,12 +174,22 @@ export class GameMap{
         this.callbacks.push(callback);
     }
 
-    moveCallback(_layer: any, pointer: Phaser.Pointer){
-        console.log(pointer);
+    clickCallback(_layer: any, pointer: Phaser.Pointer){
         let coords = this.mapGroup.toLocal(pointer.position, this.mapGroup.parent);
         let tile = this.map.getTileWorldXY(coords.x, coords.y, undefined, undefined, MapLayers.BASE, true);
 
         if(tile != null){
+            for(let callback of this.callbacks){
+                callback.mapClicked(tile);
+            }
+        }
+    }
+
+    moveCallback(pointer: Phaser.Pointer, _x: number, _y:number, isClick: boolean){
+        let coords = this.mapGroup.toLocal(pointer.position, this.mapGroup.parent);
+        let tile = this.map.getTileWorldXY(coords.x, coords.y, undefined, undefined, MapLayers.BASE, true);
+
+        if(tile != null && !isClick){
             for(let callback of this.callbacks){
                 callback.mapHovered(tile);
             }

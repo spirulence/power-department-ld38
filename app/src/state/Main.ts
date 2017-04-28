@@ -67,8 +67,8 @@ export class Main extends Phaser.State {
     }
 
     private setupFacilities() {
-        // this.facilities = new Facilities(this.map);
-        // this.facilities.setLandPrice(this.landPrice);
+        this.facilities = new Facilities(this.map);
+        this.facilities.setLandPrice(this.map.landPrice);
     }
 
     private setupInventory() {
