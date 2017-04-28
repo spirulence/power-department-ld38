@@ -42,7 +42,7 @@ export class Main extends Phaser.State {
     private active: boolean;
     private mapID: string;
     private nextCutscene: string;
-    private scrollSpeed: number;
+
 
     init(slickUI: any, difficulty: string, level: LevelInfo){
         this.slickUI = slickUI;
@@ -123,68 +123,6 @@ export class Main extends Phaser.State {
             mapClicked: this.clickBaseLayer.bind(this),
             mapHovered: function(){}
         });
-
-        // this.mapGroup = this.add.group();
-        //
-        // this.map = this.add.tilemap(this.mapID);
-        // this.map.addTilesetImage("tileset", "tileset");
-        // this.map.addTilesetImage("grid-tile", "grid-tile");
-        //
-        // for(let imageLayer of this.map.images) {
-        //     this.add.image(imageLayer.x, imageLayer.y, imageLayer.image, null, this.mapGroup);
-        // }
-        //
-        // let baseLayer = this.map.createLayer(MapLayers.BASE, null, null, this.mapGroup);
-        // if(this.map.images.length > 0){
-        //     baseLayer.alpha = 0.0;
-        //
-        //     // assuming that maps with image layer also have grid layer..
-        //     let gridLayer = this.map.createLayer("grid", null, null, this.mapGroup);
-        //     gridLayer.alpha = 0.125;
-        // }
-        // baseLayer.inputEnabled = true;
-        // baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));
-        // let toggleBaseKey = this.game.input.keyboard.addKey(Phaser.KeyCode.M);
-        // toggleBaseKey.onUp.add(function(){
-        //     baseLayer.alpha = 1.0-baseLayer.alpha;
-        // });
-        // this.baseLayer = baseLayer;
-        //
-        // this.map.createBlankLayer(MapLayers.TEMPORARY, 125, 75, 8, 8, this.mapGroup);
-        // this.map.createBlankLayer(MapLayers.LINES, 125, 75, 8, 8, this.mapGroup);
-        // this.map.createBlankLayer(MapLayers.FACILITIES, 125, 75, 8, 8, this.mapGroup);
-        // this.map.createBlankLayer(MapLayers.HIGHLIGHTS, 125, 75, 8, 8, this.mapGroup);
-        // this.priceLayer = this.map.createBlankLayer(MapLayers.LAND_PRICE, 125, 75, 8, 8, this.mapGroup);
-        // this.priceLayer.visible = false;
-        //
-        // let centeredX = -(this.mapGroup.width*2 - this.world.width)/2;
-        // let centeredY = -(this.mapGroup.height*2 - this.world.height)/2;
-        // let mapGroup = this.mapGroup;
-        //
-        // let zoomIn = function(){
-        //     if(mapGroup.scale.x != 2) {
-        //         mapGroup.scale.set(2);
-        //         mapGroup.position.set(centeredX, centeredY);
-        //     }
-        // };
-        //
-        // let zoomOut = function(){
-        //     if(mapGroup.scale.x != 1) {
-        //         mapGroup.scale.set(1);
-        //         mapGroup.position.set(0);
-        //     }
-        // };
-        //
-        // this.input.keyboard.addKey(Phaser.KeyCode.ONE).onUp.add(zoomIn);
-        // this.input.keyboard.addKey(Phaser.KeyCode.TWO).onUp.add(zoomOut);
-        // let mouse = this.input.mouse;
-        // this.input.mouse.mouseWheelCallback = function(){
-        //     if(mouse.wheelDelta == Phaser.Mouse.WHEEL_DOWN){
-        //         zoomIn();
-        //     }else{
-        //         zoomOut();
-        //     }
-        // }
     }
 
     private setupDialogs() {
@@ -202,6 +140,9 @@ export class Main extends Phaser.State {
         let newTransmissionLine = function(tile: MapTile){
             let placer = new LinePlacer(map, facilities, tile);
             mainstate.placer = placer;
+            placer.onFinish = function(){
+                mainstate.placer = null;
+            };
         };
         this.dialogs.addAction(DialogButtons.NewTransmissionLine, newTransmissionLine);
     }
@@ -225,31 +166,8 @@ export class Main extends Phaser.State {
 
 
     update() {
-        // if(this.isZoomedIn()){
-        //     this.scrollMap();
-        // }
+        this.map.update();
     }
-
-    // private scrollMap() {
-    //     if (this.input.keyboard.isDown(Phaser.KeyCode.LEFT)) {
-    //         this.mapGroup.position.x += this.scrollSpeed;
-    //     }
-    //     if (this.input.keyboard.isDown(Phaser.KeyCode.RIGHT)) {
-    //         this.mapGroup.position.x -= this.scrollSpeed;
-    //     }
-    //     if (this.input.keyboard.isDown(Phaser.KeyCode.UP)) {
-    //         this.mapGroup.position.y += this.scrollSpeed;
-    //     }
-    //     if (this.input.keyboard.isDown(Phaser.KeyCode.DOWN)) {
-    //         this.mapGroup.position.y -= this.scrollSpeed;
-    //     }
-    //     this.mapGroup.position.clampX(-(this.mapGroup.width - this.world.width), 0);
-    //     this.mapGroup.position.clampY(-(this.mapGroup.height - this.world.height), 0);
-    // }
-    //
-    // private isZoomedIn() {
-    //     return this.mapGroup.scale.x != 1;
-    // }
 
     private setupHover() {
         // let highlighter = new NetworkHighlighter();

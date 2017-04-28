@@ -32,6 +32,7 @@ export class Overlay{
     private unusedSprites: Phaser.Sprite[];
     private game: Phaser.Game;
 
+
     constructor(tilesize: number, game: Phaser.Game, parent: Phaser.Group){
         this.game = game;
         this.group = game.add.group(parent);
@@ -116,14 +117,18 @@ export class GameMap{
     private mapGroup: Phaser.Group;
     private callbacks: MapCallback[];
     private baseLayer: Phaser.TilemapLayer;
+    private game: Phaser.Game;
+    private scrollSpeed: number;
 
     constructor(game: Phaser.Game, mapID: string){
         this.callbacks = [];
 
         this.width = 125;
         this.height = 75;
+        this.scrollSpeed = 4;
 
         game.input.addMoveCallback(this.moveCallback, this);
+        this.game = game;
 
         this.mapGroup = game.add.group();
 
@@ -190,6 +195,12 @@ export class GameMap{
         baseLayer.inputEnabled = true;
         baseLayer.events.onInputDown.add(this.clickCallback.bind(this));
         this.baseLayer = baseLayer;
+
+        //toggle between image layer and base layer
+        let toggleBaseKey = this.game.input.keyboard.addKey(Phaser.KeyCode.M);
+        toggleBaseKey.onUp.add(function(){
+            baseLayer.alpha = 1.0-baseLayer.alpha;
+        });
     }
 
     private addImageLayers(game: Phaser.Game) {
@@ -249,5 +260,45 @@ export class GameMap{
             line: this.overlays[MapLayers.LINES].getTile(location) != -1,
             landPrice: this.landPrice.getPrice(location.x, location.y)
         };
+    }
+
+    removeCallback(callback: {mapHovered: any; mapClicked: any}) {
+        let index = 0;
+        let found = false;
+        for(let addedCallback of this.callbacks){
+            if(addedCallback.mapHovered == callback.mapHovered && addedCallback.mapClicked == callback.mapClicked){
+                found = true;
+                break;
+            }
+            index++;
+        }
+        this.callbacks.splice(index, 1);
+    }
+
+    update() {
+        if(this.isZoomedIn()){
+            this.scrollMap();
+        }
+    }
+
+    private scrollMap() {
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.LEFT)) {
+            this.mapGroup.position.x += this.scrollSpeed;
+        }
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.RIGHT)) {
+            this.mapGroup.position.x -= this.scrollSpeed;
+        }
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.UP)) {
+            this.mapGroup.position.y += this.scrollSpeed;
+        }
+        if (this.game.input.keyboard.isDown(Phaser.KeyCode.DOWN)) {
+            this.mapGroup.position.y -= this.scrollSpeed;
+        }
+        this.mapGroup.position.clampX(-(this.mapGroup.width - this.game.world.width), 0);
+        this.mapGroup.position.clampY(-(this.mapGroup.height - this.game.world.height), 0);
+    }
+
+    private isZoomedIn() {
+        return this.mapGroup.scale.x != 1;
     }
 }

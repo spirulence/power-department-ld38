@@ -8,6 +8,8 @@ export class LinePlacer{
     private map: GameMap;
     private line: PowerLine;
     private facilities: Facilities;
+    onFinish: () => void;
+    private callback: {mapHovered: any; mapClicked: any};
 
     constructor(map: GameMap, facilities: Facilities, source: MapTile){
         this.map = map;
@@ -16,10 +18,11 @@ export class LinePlacer{
         this.destination = null;
         this.line = null;
 
-        this.map.addCallback({
+        this.callback = {
             mapHovered: this.destMoved.bind(this),
             mapClicked: this.clickCallback.bind(this)
-        })
+        };
+        this.map.addCallback(this.callback);
     }
 
     private destMoved(tile: MapTile){
@@ -46,6 +49,8 @@ export class LinePlacer{
     clickCallback(tile: MapTile) {
         this.clearAndRedrawTemp(tile);
         this.clearTemporaryLayer();
+        this.onFinish();
+        this.map.removeCallback(this.callback);
         if(this.line.isValid()) {
             this.facilities.purchaseLine(this.line);
         }
