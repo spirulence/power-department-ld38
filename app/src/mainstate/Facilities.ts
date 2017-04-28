@@ -47,8 +47,19 @@ export class Facility{
     }
 
     isValid(){
-        let facility = this.map.getTile(this.location).facility;
-        return facility === FacilityTypes.Nothing;
+        let range = 1;
+        
+        for(let x = -range; x<= range; x++){
+            for(let y = -range; y<=range; y++){
+                let location = {x: x+this.location.x, y: y+this.location.y};
+                let facility = this.map.getTile(location).facility;
+                if(facility != FacilityTypes.Nothing){
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     draw() {
