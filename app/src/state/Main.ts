@@ -53,7 +53,6 @@ export class Main extends Phaser.State {
 
     create() {
         this.active = true;
-        this.scrollSpeed = 4;
 
         this.setupMusic();
         this.setupMap();

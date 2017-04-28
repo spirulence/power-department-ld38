@@ -191,6 +191,9 @@ export class GameMap{
         let baseLayer = this.map.createLayer(MapLayers.BASE, null, null, this.mapGroup);
         if (this.map.images.length > 0) {
             baseLayer.alpha = 0.0;
+
+            let gridLayer = this.map.createLayer("grid", null, null, this.mapGroup);
+            gridLayer.alpha = 0.125;
         }
         baseLayer.inputEnabled = true;
         baseLayer.events.onInputDown.add(this.clickCallback.bind(this));
@@ -211,6 +214,7 @@ export class GameMap{
 
     private addTileSets() {
         this.map.addTilesetImage("tileset", "tileset");
+        this.map.addTilesetImage("grid-tile", "grid-tile");
     }
 
     private createOverlay(name: string, tilesize: number, game: Phaser.Game, parent: Phaser.Group) {
