@@ -25,12 +25,20 @@ export interface MapTile{
 }
 
 export class Layer{
+    get visible(): boolean {
+        return this._visible;
+    }
+    set visible(value: boolean) {
+        this._visible = value;
+        this.group.visible = value;
+    }
     private group: Phaser.Group;
     private tileset: string;
     private tilesize: number;
     private sprites: Phaser.Sprite[];
     private unusedSprites: Phaser.Sprite[];
     private game: Phaser.Game;
+    private _visible: boolean;
 
 
     constructor(tilesize: number, game: Phaser.Game, parent: Phaser.Group){
@@ -50,7 +58,8 @@ export class Layer{
         let found = false;
         for(let sprite of this.sprites){
             if(sprite.x == pixelX && sprite.y == pixelY){
-                sprite.frame = tile;
+                sprite.frame = tile - 1;
+                found = true;
             }
         }
 
@@ -137,7 +146,7 @@ export class GameMap{
 
         this.addImageLayers(game);
         this.setupBaseLayer();
-        this.createOverlays(game);
+        this.createLayers(game);
         this.createPrices();
         this.setupZooming(game);
     }
@@ -176,15 +185,25 @@ export class GameMap{
     private createPrices() {
         this.landPrice = new LandPrice();
         this.landPrice.map = this.map;
+        this.landPrice.addToLayer(this.layers.land_price);
     }
 
-    private createOverlays(game: Phaser.Game) {
+    private createLayers(game: Phaser.Game) {
         this.layers = {};
 
         this.createOverlay(MapLayers.TEMPORARY, 8, game, this.mapGroup);
         this.createOverlay(MapLayers.LINES, 8, game, this.mapGroup);
         this.createOverlay(MapLayers.FACILITIES, 8, game, this.mapGroup);
         this.createOverlay(MapLayers.HIGHLIGHTS, 8, game, this.mapGroup);
+        this.createOverlay(MapLayers.LAND_PRICE, 8, game, this.mapGroup);
+
+        this.layers.land_price.visible = false;
+        //toggle between image layer and base layer
+        let toggleBaseKey = this.game.input.keyboard.addKey(Phaser.KeyCode.P);
+        let layer = this.layers.land_price;
+        toggleBaseKey.onUp.add(function(){
+            layer.visible = !layer.visible;
+        });
     }
 
     private setupBaseLayer() {
