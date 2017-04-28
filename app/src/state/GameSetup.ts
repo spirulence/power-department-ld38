@@ -104,13 +104,16 @@ export class GameSetup extends Phaser.State {
         this.panel.container.displayGroup.destroy(true);
 
         let levelInfo: LevelInfo = {mapID: "map1", cutsceneFile: "level2intro.html"};
-        if(document.title === "Power Department - Level 2"){
+        if (document.title === "Power Department Tutorial") {
+            levelInfo.mapID = "tutorial";
+            levelInfo.cutsceneFile = "index.html";
+        } else if (document.title === "Power Department - Level 2") {
             levelInfo.mapID = "map2";
             levelInfo.cutsceneFile = "level3intro.html";
-        }else if(document.title === "Power Department - Level 3"){
+        } else if (document.title === "Power Department - Level 3") {
             levelInfo.mapID = "map3";
             levelInfo.cutsceneFile = "level4intro.html";
-        }else if(document.title === "Power Department - Level 4"){
+        } else if (document.title === "Power Department - Level 4") {
             levelInfo.mapID = "map4";
             levelInfo.cutsceneFile = "outro.html";
         }
