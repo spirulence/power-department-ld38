@@ -101,8 +101,9 @@ export class LandPrice{
             for (let column = 0; column < this._map.width; column++) {
                 let price = this.prices[row][column];
                 let highlight = LandPrice.computeHighlight(price, min, max);
-                // console.log("price", price, "highlight", highlight);
-                layer.setTile({x:column, y: row}, highlight);
+                if(highlight != PriceHighlights.Level0){
+                    layer.setTile({x:column, y: row}, highlight);
+                }
             }
         }
     }
