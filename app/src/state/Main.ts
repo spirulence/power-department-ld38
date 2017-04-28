@@ -42,6 +42,7 @@ export class Main extends Phaser.State {
     private mapID: string;
     private nextCutscene: string;
     private priceLayer: Phaser.TilemapLayer;
+    private baseLayer: Phaser.TilemapLayer;
     private mapGroup: Phaser.Group;
     private scrollSpeed: number;
 
@@ -138,6 +139,11 @@ export class Main extends Phaser.State {
         }
         baseLayer.inputEnabled = true;
         baseLayer.events.onInputDown.add(this.clickBaseLayer.bind(this));
+        let toggleBaseKey = this.game.input.keyboard.addKey(Phaser.KeyCode.M);
+        toggleBaseKey.onUp.add(function(){
+            baseLayer.alpha = 1.0-baseLayer.alpha;
+        });
+        this.baseLayer = baseLayer;
 
         this.map.createBlankLayer(MapLayers.TEMP_LAYER, 125, 75, 8, 8, this.mapGroup);
         this.map.createBlankLayer(MapLayers.LINES_LAYER, 125, 75, 8, 8, this.mapGroup);
