@@ -16,8 +16,15 @@ module.exports = {
 
     plugins: [
         new HtmlWebpackPlugin({
-            title: "Intro",
+            title: "Power Department main menu",
             filename: "index.html",
+            template: "app/templates/menu.ejs",
+            chunks: []
+        }),
+        new HtmlWebpackPlugin({title: 'Power Department Tutorial', filename: "tutorial.html"}),
+        new HtmlWebpackPlugin({
+            title: "Intro",
+            filename: "level1intro.html",
             cutscene:"video/intro-720p.webm",
             level: "level1.html",
             template: "app/templates/cutscene.ejs",
