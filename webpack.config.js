@@ -34,7 +34,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level2intro.html",
-            cutscene:"video/bastards.webm",
+            cutscene:"video/02_board_meeting.webm",
             level: "level2.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -43,7 +43,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level3intro.html",
-            cutscene:"video/warning-2.webm",
+            cutscene:"video/03_warning.webm",
             level: "level3intro2.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
