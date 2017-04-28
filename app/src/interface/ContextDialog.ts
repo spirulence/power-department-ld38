@@ -1,15 +1,16 @@
+import {MapTile} from "../mainstate/GameMap";
 export interface Button{
     normal: number;
     hover: number;
-    onPress: (tile: Phaser.Tile)=>void;
+    onPress: (tile: MapTile)=>void;
 }
 
 export class ContextDialog{
     group: Phaser.Group;
     game: Phaser.Game;
-    tile: Phaser.Tile;
+    tile: MapTile;
 
-    constructor(buttons: Array<Button>, game: Phaser.Game, tile: Phaser.Tile){
+    constructor(buttons: Array<Button>, game: Phaser.Game, tile: MapTile){
         this.group = game.add.group(undefined, "contextDialog", true);
         this.game = game;
         this.game.world.bringToTop(this.group);

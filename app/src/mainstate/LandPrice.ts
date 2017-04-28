@@ -1,15 +1,15 @@
 import {TerrainTypes} from "./Terrain";
-import {MapLayers} from "./Facilities";
-
-const HIGHLIGHT_LEVELS = 5;
-
-enum PriceHighlights{
-    Level0 = 60,
-    Level1 = 61,
-    Level2 = 62,
-    Level3 = 63,
-    Level4 = 64
-}
+// import {MapLayers} from "./GameMap";
+//
+// const HIGHLIGHT_LEVELS = 5;
+//
+// enum PriceHighlights{
+//     Level0 = 60,
+//     Level1 = 61,
+//     Level2 = 62,
+//     Level3 = 63,
+//     Level4 = 64
+// }
 
 export class LandPrice{
 
@@ -66,45 +66,45 @@ export class LandPrice{
     }
 
     private addToMap() {
-        let max = 0;
-        let min = LandPrice.CHECKING_RANGE * LandPrice.CHECKING_RANGE * LandPrice.CITY_PRICE_DRIVER;
-
-        for(let row = 0; row < this._map.height; row++){
-            for(let column = 0; column < this._map.width; column++){
-                max = Math.max(this.prices[row][column], max);
-                min = Math.min(this.prices[row][column], min);
-            }
-        }
-
-        for(let row = 0; row < this._map.height; row++) {
-            for (let column = 0; column < this._map.width; column++) {
-                let price = this.prices[row][column];
-                let highlight = LandPrice.computeHighlight(price, min, max);
-                // console.log("price", price, "highlight", highlight);
-                this._map.putTile(highlight, column, row, MapLayers.LAND_PRICE);
-            }
-        }
+        // let max = 0;
+        // let min = LandPrice.CHECKING_RANGE * LandPrice.CHECKING_RANGE * LandPrice.CITY_PRICE_DRIVER;
+        //
+        // for(let row = 0; row < this._map.height; row++){
+        //     for(let column = 0; column < this._map.width; column++){
+        //         max = Math.max(this.prices[row][column], max);
+        //         min = Math.min(this.prices[row][column], min);
+        //     }
+        // }
+        //
+        // for(let row = 0; row < this._map.height; row++) {
+        //     for (let column = 0; column < this._map.width; column++) {
+        //         let price = this.prices[row][column];
+        //         let highlight = LandPrice.computeHighlight(price, min, max);
+        //         // console.log("price", price, "highlight", highlight);
+        //         this._map.putTile(highlight, column, row, MapLayers.LAND_PRICE);
+        //     }
+        // }
     }
 
-    private static computeHighlight(price: number, min: number, max: number) {
-        let numberOfLevels = HIGHLIGHT_LEVELS;
-
-        let zeroBasedPrice = (price - min);
-        let zeroBasedMax = (max - min);
-
-        let percentage = zeroBasedPrice / zeroBasedMax;
-        let level = Math.round(percentage * numberOfLevels);
-        switch(level){
-            case 0:
-                return PriceHighlights.Level0;
-            case 1:
-                return PriceHighlights.Level1;
-            case 2:
-                return PriceHighlights.Level2;
-            case 3:
-                return PriceHighlights.Level3;
-            default:
-                return PriceHighlights.Level4;
-        }
-    }
+    // private static computeHighlight(price: number, min: number, max: number) {
+    //     let numberOfLevels = HIGHLIGHT_LEVELS;
+    //
+    //     let zeroBasedPrice = (price - min);
+    //     let zeroBasedMax = (max - min);
+    //
+    //     let percentage = zeroBasedPrice / zeroBasedMax;
+    //     let level = Math.round(percentage * numberOfLevels);
+    //     switch(level){
+    //         case 0:
+    //             return PriceHighlights.Level0;
+    //         case 1:
+    //             return PriceHighlights.Level1;
+    //         case 2:
+    //             return PriceHighlights.Level2;
+    //         case 3:
+    //             return PriceHighlights.Level3;
+    //         default:
+    //             return PriceHighlights.Level4;
+    //     }
+    // }
 }
