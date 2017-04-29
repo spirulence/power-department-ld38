@@ -3,7 +3,8 @@ import {Graph} from "../utils/Graph";
 import {bresenhamLine} from "../utils/Bresenham";
 import {LandPrice} from "./LandPrice";
 import {TerrainTypes} from "./Terrain";
-import {MapLayers, MapTile, GameMap} from "./GameMap";
+import {MapLayers, GameMap} from "./GameMap";
+import {Finances} from "./Finances";
 
 export enum FacilityTypes{
     Nothing = -1,
@@ -40,14 +41,14 @@ export class Facility{
     type: FacilityTypes;
 
     initialCosts:{
-        "materials": number,
-        "land": number,
-        "workers": number
+        materials: number,
+        land: number,
+        workers: number
     };
 
     quarterlyCosts:{
-        "fuel": number,
-        "upkeep": number
+        fuel: number,
+        upkeep: number
     };
 
     protected map: GameMap;
@@ -73,6 +74,10 @@ export class Facility{
                     }
                 }
             }
+        }
+
+        if(this.map.hasTile(this.location) && this.map.getTile(this.location).terrain == TerrainTypes.Water){
+            return false;
         }
 
         return true;
@@ -451,6 +456,7 @@ export type FacilitiesNotifier = (facilities: Facilities)=>void;
 export class Facilities {
     private map: GameMap;
     private inventory: Inventory;
+    private finances: Finances;
     private notifiers: FacilitiesNotifier[];
 
     powerNetwork: PowerNetwork;
@@ -473,43 +479,24 @@ export class Facilities {
         }
     }
 
-    addSubstation(tile: MapTile) {
-        let location = new VertexPoint(tile.location.x, tile.location.y, -1);
-        let facility = new Facility(location, FacilityTypes.Substation, this.map);
-        let price = 5 + tile.landPrice;
-        if (this.inventory.enoughDollars(price)){
+
+    addFacility(facility: Facility) {
+        if (this.finances.canAffordFacility(facility)){
             if(facility.isValid()) {
                 facility.draw();
-                this.inventory.deductDollars(price);
+                this.finances.newFacility(facility);
                 this.powerNetwork.addFacility(facility);
                 this.notify();
             }
-        }else{
-            this.inventory.notifyNotEnoughDollars();
-        }
-    }
-
-    addPlant(plant: Plant) {
-        if (this.inventory.enoughDollars(plant.price)){
-            if(plant.isValid()) {
-                plant.draw();
-                this.inventory.deductDollars(plant.price);
-                this.powerNetwork.addFacility(plant);
-                this.notify();
-            }
-        }else{
-            this.inventory.notifyNotEnoughDollars();
         }
     }
 
     purchaseLine(line: PowerLine) {
-        if(this.inventory.enoughDollars(line.cost)){
-            this.inventory.deductDollars(line.cost);
+        if(this.finances.canAffordLine(line)){
+            this.finances.newLine(line);
             line.drawPermanent();
             this.powerNetwork.addLine(line);
             this.notify();
-        }else{
-            this.inventory.notifyNotEnoughDollars();
         }
     }
 
@@ -533,13 +520,15 @@ export class Facilities {
         this.inventory = inventory;
     }
 
+    setFinances(finances: Finances){
+        this.finances = finances;
+    }
+
     setLandPrice(landPrice: LandPrice){
         this.landPrice = landPrice;
     }
 
     isFacilityAt(coord: VertexPoint) {
-        // return false;
-        console.log(this.map.getTile(coord).facility);
         return this.map.getTile(coord).facility != FacilityTypes.Nothing;
     }
 

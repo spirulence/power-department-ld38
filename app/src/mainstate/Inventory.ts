@@ -1,43 +1,17 @@
-export type InventoryNotifier = (inv: Inventory, event: string)=>void;
+import {EventedNumber} from "./EventedQuantity";
 
 export class Inventory{
-    dollarsMillions: number;
-    notifiers: InventoryNotifier[];
-    private maximumDebt = 100;
+    workers: EventedNumber;
+    assigned: EventedNumber;
+    available: EventedNumber;
+    next: EventedNumber;
+    nextNext: EventedNumber;
 
-    constructor(money: number){
-        this.dollarsMillions = money;
-        this.notifiers = [];
-    }
-
-    addNotifier(callback: InventoryNotifier){
-        this.notifiers.push(callback);
-    }
-
-    enoughDollars(purchase: number){
-        return (this.dollarsMillions + this.maximumDebt) >= purchase;
-    }
-
-    deductDollars(purchase: number) {
-        this.dollarsMillions -= purchase;
-        this.notify("purchase");
-    }
-
-    private notify(event: string) {
-        for (let callback of this.notifiers) {
-            callback(this, event);
-        }
-    }
-
-    addDollars(addition: number) {
-        this.dollarsMillions += addition;
-    }
-
-    notifyNotEnoughDollars() {
-        this.notify("notEnough");
-    }
-
-    firstNotify() {
-        this.notify("isSetup");
+    constructor(workers: number){
+        this.workers = new EventedNumber(workers);
+        this.assigned = new EventedNumber(0);
+        this.available = new EventedNumber(workers);
+        this.next = new EventedNumber(workers);
+        this.nextNext = new EventedNumber(workers);
     }
 }

@@ -12,13 +12,13 @@ export interface Builder{
     open: ()=>void;
     close: ()=>void;
     completeAffirmative: ()=>void;
+    completeNegative: ()=>void;
 
     mapClicked(mapTile: MapTile): void;
     mapHovered(mapTile: MapTile): void;
 
-    onReady: (callback:()=>void)=>void;
+    onReady: (callback:(mapTile: MapTile)=>void)=>void;
     onChange: (callback:()=>void)=>void;
-    setupConfirmation(confirmation: {yes: Phaser.Button; no: Phaser.Button}): void;
 }
 
 abstract class BaseBuilder implements Builder{
@@ -33,7 +33,7 @@ abstract class BaseBuilder implements Builder{
 
     private isReady: boolean;
     private isOpen: boolean;
-    private readyCallback: () => void;
+    private readyCallback: (tile: MapTile) => void;
     private changeCallback: () => void;
 
     constructor(map: GameMap){
@@ -43,44 +43,17 @@ abstract class BaseBuilder implements Builder{
         this.isReady = false;
     }
 
-    setupConfirmation(confirmation: {yes: Phaser.Button; no: Phaser.Button}): void {
-        confirmation.yes.position = this.map.toScreen(this.lastLocation);
-        confirmation.yes.position.y -= 12;
-        confirmation.yes.position.x -= 40;
-        confirmation.yes.visible = true;
-        let complete = function(this: BaseBuilder){
-            this.completeAffirmative();
-            confirmation.yes.onInputUp.remove(complete, this);
-            confirmation.yes.visible = false;
-            confirmation.no.onInputUp.remove(complete2, this);
-            confirmation.no.visible = false;
-        };
-        confirmation.yes.onInputUp.add(complete, this);
-
-        confirmation.no.position = this.map.toScreen(this.lastLocation);
-        confirmation.no.position.y -= 12;
-        confirmation.no.position.x += 16;
-        confirmation.no.visible = true;
-        let complete2 = function(this: BaseBuilder){
-            this.close();
-            confirmation.yes.onInputUp.remove(complete, this);
-            confirmation.yes.visible = false;
-            confirmation.no.onInputUp.remove(complete2, this);
-            confirmation.no.visible = false;
-        };
-        confirmation.no.onInputUp.add(complete2, this);
-    }
-
     mapClicked(tile: MapTile){
         if(this.isOpen) {
             this.clearLast();
             this.speculate(tile.location);
             this.updateCost();
-            this.readyCallback();
+            this.readyCallback(tile);
             this.isReady = true;
             this.lastLocation = tile.location;
         }
     }
+
     mapHovered(mapTile: MapTile){
         if(this.isOpen && !this.isReady) {
             this.clearLast();
@@ -108,7 +81,11 @@ abstract class BaseBuilder implements Builder{
         this.build();
     }
 
-    onReady(callback: () => void){
+    completeNegative(){
+        this.clearLast();
+    }
+
+    onReady(callback: (mapTile: MapTile) => void){
         this.readyCallback = callback;
     }
 
@@ -151,7 +128,7 @@ export class GeneratorBuilder extends BaseBuilder{
 
     protected build(): void {
         if(this.generator != null && this.generator.isValid()) {
-            this.facilities.addPlant(this.generator);
+            this.facilities.addFacility(this.generator);
         }
     }
     
@@ -191,7 +168,7 @@ export class SubstationBuilder extends BaseBuilder{
 
     protected build(): void {
         if(this.substation != null && this.substation.isValid()) {
-            this.facilities.addPlant(this.substation);
+            this.facilities.addFacility(this.substation);
         }
     }
 

@@ -18,7 +18,9 @@ export class Preload extends Phaser.State {
         this.load.image("rural-1.png", "assets/rural-1.png");
         this.load.image("delta-2.png", "assets/delta-2.png");
 
-        this.load.spritesheet('buttons', 'assets/buttons.png', 32, 32);
+        this.load.spritesheet('buttons', 'assets/interface/buttons.png', 32, 32);
+        this.load.image("left_panel", "assets/interface/left_panel.png");
+        this.load.image("money_panel", "assets/interface/money_panel.png");
 
         this.slickUI = this.game.plugins.add(Phaser.Plugin.SlickUI);
         this.slickUI.load("assets/kenney-theme/kenney.json");

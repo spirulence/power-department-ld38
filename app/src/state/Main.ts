@@ -9,15 +9,9 @@ import {HappinessCalculator} from "../mainstate/Happiness";
 import {GameMap, MapTile} from "../mainstate/GameMap";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
 import {Builder, GeneratorBuilder, SubstationBuilder} from "../mainstate/Builders";
-import {BuildingPanel} from "../mainstate/BuildingPanel";
-
-
-interface Finances {
-    revenue: number
-    maintenance: number
-    fuel: number
-    interest: number
-}
+import {BuildingPanel} from "../interface/BuildingPanel";
+import {LeftPanels} from "../interface/LeftPanels";
+import {Finances} from "../mainstate/Finances";
 
 export class Main extends Phaser.State {
     map: GameMap;
@@ -40,6 +34,7 @@ export class Main extends Phaser.State {
     private mapID: string;
     private nextCutscene: string;
     private buildingPanel: BuildingPanel;
+    private finances: Finances;
 
 
     init(slickUI: any, difficulty: string, level: LevelInfo){
@@ -52,17 +47,23 @@ export class Main extends Phaser.State {
     create() {
         this.active = true;
 
+        this.setStageOptions();
         this.setupMusic();
         this.setupMap();
         this.setupQuarterCounter();
         this.setupFacilities();
         this.setupDialogs();
         this.setupText();
+        this.setupFinances();
         this.setupInventory();
         this.setupDemand();
         this.setupHover();
         this.setupUI();
         this.setupHappiness();
+    }
+
+    private setStageOptions() {
+        this.stage.smoothed = false;
     }
 
     private setupFacilities() {
@@ -71,38 +72,7 @@ export class Main extends Phaser.State {
     }
 
     private setupInventory() {
-        let money = 250;
-        if(this.difficulty == "medium"){
-            money = 125;
-        }else if(this.difficulty == "hard"){
-            money = 50;
-        }
-
-        this.inventory = new Inventory(money);
-        this.facilities.setInventory(this.inventory);
-        let belowText = this.belowText;
-        let game = this.game;
-        this.inventory.addNotifier(function (inv: Inventory, event: string) {
-            belowText.text = `$${inv.dollarsMillions}m`;
-            if(inv.dollarsMillions <= 0){
-                belowText.setStyle({font: "20px monospace", fill: "#f00"});
-            }else{
-                belowText.setStyle({font: "20px monospace", fill: "#fff"});
-            }
-
-            if(event == "notEnough"){
-                let blink = function(){
-                    if(belowText.alpha == 1.0){
-                        belowText.alpha = 0.0;
-                    }else{
-                        belowText.alpha = 1.0;
-                    }
-                };
-
-                game.time.events.repeat(Phaser.Timer.SECOND/8.0, 10, blink);
-            }
-        });
-        this.inventory.firstNotify();
+        this.inventory = new Inventory(50);
     }
 
     private setupText() {
@@ -111,7 +81,6 @@ export class Main extends Phaser.State {
     }
 
     private setupMap() {
-        this.stage.smoothed = false;
 
         this.map = new GameMap(this.game, this.mapID);
 
@@ -218,6 +187,8 @@ export class Main extends Phaser.State {
         nextQuarter.events.onInputUp.add(this.advanceQuarter, this);
         this.nextQuarterButton = nextQuarter;
 
+        new LeftPanels(this.game, this.finances, this.inventory, this.happiness);
+
         let builders: {[id:string]: Builder} = {
             ["generator_panel"]: new GeneratorBuilder(this.map, this.facilities),
             ["substation_panel"]: new SubstationBuilder(this.map, this.facilities)
@@ -229,11 +200,6 @@ export class Main extends Phaser.State {
     }
 
     private advanceQuarter() {
-        let finances: Finances = this.runFinances();
-        this.inventory.addDollars(finances.revenue);
-        this.inventory.deductDollars(finances.maintenance);
-        this.inventory.deductDollars(finances.fuel);
-        this.inventory.deductDollars(finances.interest);
 
         if(this.gameIsWon()){
             this.gameWon();
@@ -266,13 +232,13 @@ export class Main extends Phaser.State {
             descriptions.push("Nothing particularly notable happened.");
         }
 
-        descriptions.push("");
-        descriptions.push(this.happiness.current().sentence);
-        descriptions.push("");
-        descriptions.push("Revenue: +"+finances.revenue);
-        descriptions.push("Maintenance: -"+finances.maintenance);
-        descriptions.push("Fuel: -"+finances.fuel);
-        descriptions.push("Loan Interest: -"+finances.interest);
+        // descriptions.push("");
+        // descriptions.push(this.happiness.current().sentence);
+        // descriptions.push("");
+        // descriptions.push("Revenue: +"+finances.revenue);
+        // descriptions.push("Maintenance: -"+finances.maintenance);
+        // descriptions.push("Fuel: -"+finances.fuel);
+        // descriptions.push("Loan Interest: -"+finances.interest);
 
         let panel = new SlickUI.Element.Panel(250, 50, 500, 500);
         this.slickUI.add(panel);
@@ -368,44 +334,58 @@ export class Main extends Phaser.State {
         this.game.state.start("game_won", false, false, this.slickUI, this.nextCutscene);
     }
 
-    private runFinances() {
-        //generate revenue based on how many connected
-        let revenue = this.demand.satisfaction.reliable + this.demand.satisfaction.unreliable;
-        revenue = Math.floor(revenue / 2);
-
-        //pay maintenance based on lines and substations
-        let maintenance = 0;
-        for(let subnetwork of this.facilities.powerNetwork.allSubnetworks()){
-            maintenance += subnetwork.substations.length * 2;
-            maintenance += subnetwork.lines.length;
-            maintenance += subnetwork.plants.length * 3;
-        }
-
-        //pay cost of fuel based on how many plants
-        let fuel = 0;
-        for(let subnetwork of this.facilities.powerNetwork.allSubnetworks()){
-            fuel += subnetwork.plants.length * 10;
-        }
-
-        let interest = 0;
-        if(this.inventory.dollarsMillions < 0){
-            interest += Math.floor(this.inventory.dollarsMillions * .12);
-        }
-
-        return {
-            revenue: revenue,
-            maintenance: maintenance,
-            fuel: fuel,
-            interest: interest,
-        };
-    }
+    // private runFinances() {
+    //     //generate revenue based on how many connected
+    //     let revenue = this.demand.satisfaction.reliable + this.demand.satisfaction.unreliable;
+    //     revenue = Math.floor(revenue / 2);
+    //
+    //     //pay maintenance based on lines and substations
+    //     let maintenance = 0;
+    //     for(let subnetwork of this.facilities.powerNetwork.allSubnetworks()){
+    //         maintenance += subnetwork.substations.length * 2;
+    //         maintenance += subnetwork.lines.length;
+    //         maintenance += subnetwork.plants.length * 3;
+    //     }
+    //
+    //     //pay cost of fuel based on how many plants
+    //     let fuel = 0;
+    //     for(let subnetwork of this.facilities.powerNetwork.allSubnetworks()){
+    //         fuel += subnetwork.plants.length * 10;
+    //     }
+    //
+    //     let interest = 0;
+    //     if(this.inventory.dollarsMillions < 0){
+    //         interest += Math.floor(this.inventory.dollarsMillions * .12);
+    //     }
+    //
+    //     return {
+    //         revenue: revenue,
+    //         maintenance: maintenance,
+    //         fuel: fuel,
+    //         interest: interest,
+    //     };
+    // }
 
     private isBankrupt() {
-        if(this.inventory.dollarsMillions <= -100){
+        if(this.finances.current.cash.number < -100){
             this.gameOver("You are bankrupt.");
             return true;
         }
         return false;
+    }
+
+    private setupFinances() {
+        this.finances = new Finances();
+
+        let money = 250;
+        if(this.difficulty == "medium"){
+            money = 125;
+        }else if(this.difficulty == "hard"){
+            money = 50;
+        }
+        this.finances.addCash(money);
+
+        this.facilities.setFinances(this.finances);
     }
 }
 

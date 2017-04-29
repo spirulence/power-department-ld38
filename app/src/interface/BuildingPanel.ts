@@ -1,4 +1,6 @@
 import {Builder} from "../mainstate/Builders";
+import {ConfirmationDialog} from "./ConfirmationDialog";
+import {MapTile} from "../mainstate/GameMap";
 
 export const enum BuildingPanelButtons {
     NewPlant = 2,
@@ -7,7 +9,7 @@ export const enum BuildingPanelButtons {
 
 class IndividualPanel{
     public isOpen: boolean;
-    public confirmation: {yes: Phaser.Button, no: Phaser.Button};
+    public confirmation: ConfirmationDialog;
 
     private openPosition: number;
     private closedPosition: number;
@@ -74,6 +76,8 @@ class IndividualPanel{
                 }
             }, this,
             buttonImage + 1, buttonImage, buttonImage, buttonImage));
+
+        this.confirmation = new ConfirmationDialog(this.game, this.builder);
     }
 
     onChange(){
@@ -85,8 +89,8 @@ class IndividualPanel{
         this.upkeepCost.text = this.builder.upkeepCost.toString(10);
     }
 
-    onReady(){
-        this.builder.setupConfirmation(this.confirmation);
+    onReady(tile: MapTile){
+        this.confirmation.setLocation(tile);
     }
 
     public closeOtherOnOpen(other: IndividualPanel){
@@ -112,6 +116,7 @@ class IndividualPanel{
 
         this.isOpen = false;
         this.builder.close();
+        this.confirmation.close();
     }
 
     open(){
@@ -170,9 +175,5 @@ export class BuildingPanel{
             11, 10, 10, 10, this.group
         );
         this.negative.visible = false;
-
-        let confirmationButtons = {yes: this.affirmative, no: this.negative};
-        generator.confirmation = confirmationButtons;
-        substation.confirmation = confirmationButtons;
     }
 }

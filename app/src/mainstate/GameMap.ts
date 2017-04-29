@@ -32,7 +32,8 @@ export interface MapTile{
     terrain: TerrainTypes,
     facility: FacilityTypes,
     line: boolean,
-    landPrice: number
+    landPrice: number,
+    map: GameMap,
 }
 
 /**
@@ -170,6 +171,12 @@ export class GameMap{
      * References to the individual layers by name.
      */
     layers: {[id: string]: Layer};
+
+    /**
+     * An extra group so UI elements can be put on top of the map and scrolled/zoomed.
+     */
+    extraGroup: Phaser.Group;
+
     /**
      * The land prices for this map.
      */
@@ -182,6 +189,11 @@ export class GameMap{
      * Height in tiles of this map.
      */
     height: number;
+
+    /**
+     * Tile size in pixels (square tiles only)
+     */
+    tileSize: number;
 
     private map: Phaser.Tilemap;
     private mapGroup: Phaser.Group;
@@ -197,6 +209,7 @@ export class GameMap{
      */
     constructor(game: Phaser.Game, mapID: string){
         this.callbacks = [];
+        this.tileSize = 8;
 
         this.width = 125;
         this.height = 75;
@@ -215,6 +228,8 @@ export class GameMap{
         this.createLayers(game);
         this.createPrices();
         this.setupZooming(game);
+
+        this.extraGroup = game.add.group(this.mapGroup);
     }
 
     private setupZooming(game: Phaser.Game) {
@@ -381,7 +396,8 @@ export class GameMap{
             terrain: this.map.getTile(location.x, location.y, MapLayers.BASE, true).index,
             facility: this.layers[MapLayers.FACILITIES].getTile(location),
             line: this.layers[MapLayers.LINES].getTile(location) != -1,
-            landPrice: this.landPrice.getPrice(location.x, location.y)
+            landPrice: this.landPrice.getPrice(location.x, location.y),
+            map: this
         };
     }
 
