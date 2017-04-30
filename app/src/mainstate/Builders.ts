@@ -1,5 +1,5 @@
 import {GameMap, MapTile} from "./GameMap";
-import {Facilities, Plant, VertexPoint, Substation} from "./Facilities";
+import {Facilities, Plant, VertexPoint, Substation, PowerLine, FacilityTypes} from "./Facilities";
 
 export interface Builder{
     materialsCost: number;
@@ -9,16 +9,16 @@ export interface Builder{
     fuelCost: number;
     upkeepCost: number;
 
-    open: ()=>void;
-    close: ()=>void;
-    completeAffirmative: ()=>void;
-    completeNegative: ()=>void;
+    open(): void;
+    close(): void;
+    completeYes(): void;
+    completeNo(): void;
 
     mapClicked(mapTile: MapTile): void;
     mapHovered(mapTile: MapTile): void;
 
-    onReady: (callback:(mapTile: MapTile)=>void)=>void;
-    onChange: (callback:()=>void)=>void;
+    onReady(callback:(mapTile: MapTile)=>void): void;
+    onChange(callback:()=>void): void;
 }
 
 abstract class BaseBuilder implements Builder{
@@ -76,12 +76,12 @@ abstract class BaseBuilder implements Builder{
         this.isReady = false;
     }
 
-    completeAffirmative(){
+    completeYes(){
         this.clearLast();
         this.build();
     }
 
-    completeNegative(){
+    completeNo(){
         this.clearLast();
     }
 
@@ -181,4 +181,117 @@ export class SubstationBuilder extends BaseBuilder{
         this.upkeepCost = this.substation.quarterlyCosts.upkeep;
     }
     
+}
+
+export class LineBuilder implements Builder{
+    materialsCost: number;
+    landCost: number;
+    workersCost: number;
+    fuelCost: number;
+    upkeepCost: number;
+
+
+    private isOpen: boolean;
+    private facilities: Facilities;
+    private line: PowerLine;
+    private source: VertexPoint;
+    private destination: VertexPoint;
+    private map: GameMap;
+    private readyCallback: (mapTile: MapTile) => void;
+    private changeCallback: () => void;
+    private isReady: boolean;
+
+    constructor(map: GameMap, facilities: Facilities){
+        this.map = map;
+        this.facilities = facilities;
+        this.line = null;
+        this.source = null;
+        this.destination = null;
+        this.isReady = false;
+    }
+
+
+    mapClicked(tile: MapTile): any {
+        if(this.isOpen) {
+            if (tile.facility == FacilityTypes.Substation || tile.facility == FacilityTypes.Plant) {
+                if (this.source == null) {
+                    this.source = new VertexPoint(tile.location.x, tile.location.y, -1);
+                } else {
+                    this.clearLast();
+                    this.destination = new VertexPoint(tile.location.x, tile.location.y, -1);
+                    this.speculate();
+                    this.updateCosts();
+                    this.readyCallback(tile);
+                    this.isReady = true;
+                }
+            }
+        }
+    }
+
+    mapHovered(tile: MapTile): any {
+        if(this.isOpen) {
+            if (this.source != null && this.isReady == false) {
+                this.clearLast();
+                this.destination = new VertexPoint(tile.location.x, tile.location.y, -1);
+                this.speculate();
+                this.updateCosts();
+                this.changeCallback();
+            }
+        }
+    }
+
+    onReady(callback: (mapTile: MapTile) => void){
+        this.readyCallback = callback;
+    }
+
+    onChange(callback: () => void){
+        this.changeCallback = callback;
+    }
+
+    open(): void {
+        this.isOpen = true;
+        this.clearStatus();
+    }
+
+    close(): void {
+        this.clearLast();
+        this.clearStatus();
+        this.isOpen = false;
+    }
+
+    completeYes(): void {
+        this.facilities.purchaseLine(this.line);
+        this.clearStatus();
+    }
+
+    private clearStatus() {
+        this.line = null;
+        this.source = null;
+        this.destination = null;
+        this.isReady = false;
+    }
+
+    completeNo(): void {
+        this.clearLast();
+        this.clearStatus();
+    }
+
+    private clearLast() {
+        if(this.line != null){
+            this.line.clearTemporary();
+        }
+    }
+
+    private speculate() {
+        this.line = new PowerLine(this.source, this.destination, this.map);
+        this.line.drawTemporary();
+    }
+
+    private updateCosts() {
+        this.materialsCost = this.line.cost;
+        this.landCost = 0;
+        this.workersCost = this.line.cost;
+        this.fuelCost = 0;
+        this.upkeepCost = 1;
+    }
 }

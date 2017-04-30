@@ -3,6 +3,7 @@ import {ConfirmationDialog} from "./ConfirmationDialog";
 import {MapTile} from "../mainstate/GameMap";
 
 export const enum BuildingPanelButtons {
+    NewTransmissionLine = 0,
     NewPlant = 2,
     NewSubstation = 4
 }
@@ -152,16 +153,16 @@ export class BuildingPanel{
 
         let generator = new IndividualPanel(game, this.group, BuildingPanelButtons.NewPlant, "generator_panel", 10, builders);
         let substation = new IndividualPanel(game, this.group, BuildingPanelButtons.NewSubstation, "substation_panel", 50, builders);
-        // let line = new IndividualPanel(game, this.group, BuildingPanelButtons.NewTransmissionLine, "line_panel", 90, builders);
+        let line = new IndividualPanel(game, this.group, BuildingPanelButtons.NewTransmissionLine, "line_panel", 90, builders);
 
         generator.closeOtherOnOpen(substation);
-        // generator.closeOtherOnOpen(line);
-        //
+        generator.closeOtherOnOpen(line);
+
         substation.closeOtherOnOpen(generator);
-        // substation.closeOtherOnOpen(line);
-        //
-        // line.closeOtherOnOpen(generator);
-        // line.closeOtherOnOpen(substation);
+        substation.closeOtherOnOpen(line);
+
+        line.closeOtherOnOpen(generator);
+        line.closeOtherOnOpen(substation);
 
         this.affirmative = game.add.button(100, 100,
             "buttons",

@@ -8,7 +8,7 @@ import {LevelInfo} from "./GameSetup";
 import {HappinessCalculator} from "../mainstate/Happiness";
 import {GameMap, MapTile} from "../mainstate/GameMap";
 import {NetworkHighlighter} from "../mainstate/NetworkHighlighter";
-import {Builder, GeneratorBuilder, SubstationBuilder} from "../mainstate/Builders";
+import {Builder, GeneratorBuilder, SubstationBuilder, LineBuilder} from "../mainstate/Builders";
 import {BuildingPanel} from "../interface/BuildingPanel";
 import {LeftPanels} from "../interface/LeftPanels";
 import {Finances} from "../mainstate/Finances";
@@ -191,10 +191,12 @@ export class Main extends Phaser.State {
 
         let builders: {[id:string]: Builder} = {
             ["generator_panel"]: new GeneratorBuilder(this.map, this.facilities),
-            ["substation_panel"]: new SubstationBuilder(this.map, this.facilities)
+            ["substation_panel"]: new SubstationBuilder(this.map, this.facilities),
+            ["line_panel"]: new LineBuilder(this.map, this.facilities)
         };
         this.map.addCallback(builders["generator_panel"]);
         this.map.addCallback(builders["substation_panel"]);
+        this.map.addCallback(builders["line_panel"]);
         this.buildingPanel = new BuildingPanel(this.game, builders);
         this.world.add(this.buildingPanel.group);
     }
