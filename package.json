@@ -1,6 +1,6 @@
 {
   "name": "power-department-ld38",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "scripts": {
     "clean": "rimraf dist",
@@ -11,15 +11,16 @@
   },
   "private": true,
   "author": {
-    "name": "Geoffroy Warin"
+    "name": "Cameron Seebach",
+    "email": "pannewb@gmail.com"
   },
   "contributors": [
     {
-      "name": "Cameron Seebach",
-      "email": "pannewb@gmail.com"
+      "name": "caryoscelus",
+      "email": "caryoscelus@gmx.com"
     }
   ],
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "devDependencies": {
     "null-loader": "0.1.1",
     "webpack-dev-server": "2.4.5"
