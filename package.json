@@ -21,6 +21,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "karma-typescript": "^3.0.1",
     "null-loader": "0.1.1",
     "webpack-dev-server": "2.4.5"
   },
@@ -36,6 +37,7 @@
     "rimraf": "2.6.1",
     "script-loader": "0.7.0",
     "style-loader": "0.16.1",
+    "ts-events": "^3.2.0",
     "ts-loader": "2.0.3",
     "typescript": "2.2.2",
     "webpack": "2.4.1"

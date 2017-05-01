@@ -1,9 +1,10 @@
 /// <reference path="./defs/definitions.d.ts"/>
 
-import {Boot, Preload, Main, Menu} from './state/States';
-import {GameSetup} from "./state/GameSetup";
 import {GameOver} from "./state/GameOver";
 import {GameWin} from "./state/GameWin";
+import {Boot} from "./state/Boot";
+import {Preload} from "./state/Preload";
+import {Main} from "./state/Main";
 
 class Game extends Phaser.Game {
     constructor() {
@@ -16,8 +17,6 @@ class Game extends Phaser.Game {
 
         this.state.add('boot', Boot);
         this.state.add('preload', Preload);
-        this.state.add('main_menu', Menu);
-        this.state.add('setup', GameSetup);
         this.state.add('main', Main);
         this.state.add('game_over', GameOver);
         this.state.add('game_won', GameWin);

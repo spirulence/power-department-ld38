@@ -12,7 +12,7 @@
         "noUnusedParameters": true
     },
     "filesGlob": [
-        "./app/**/*.ts"
+        "./app/src/**/*.ts"
     ],
     "compileOnSave": false
 }
