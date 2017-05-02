@@ -1,6 +1,6 @@
 import {TilePosition} from "./TilePosition";
 
 export class TwoPoints{
-    from: TilePosition;
-    to: TilePosition;
+    from = new TilePosition();
+    to = new TilePosition();
 }

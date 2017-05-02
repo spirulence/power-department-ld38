@@ -2,7 +2,7 @@ import {OpenablePanel} from "./OpenablePanel";
 import {ToggleTogether} from "./ToggleTogether";
 import {OnlyOneOpen} from "./OnlyOneOpen";
 import {MainSystems} from "../../ecs/MainSystems";
-import {BuildMode} from "./BuildMode";
+import {BuildModes} from "./BuildModes";
 
 enum BuildingPanelButtons {
     NewTransmissionLine = 0,
@@ -16,7 +16,7 @@ export class MainGUI{
     private static readonly RIGHT_TEXT_STYLE = {font: "15px monospace", fill: "#000", boundsAlignV:"bottom", boundsAlignH:"left"};
     private game: Phaser.Game;
     private systems: MainSystems;
-    private buildMode: BuildMode;
+    private buildMode: BuildModes;
 
     constructor(game: Phaser.Game, systems: MainSystems){
         this.game = game;
@@ -26,17 +26,22 @@ export class MainGUI{
     }
 
     private setupRightPanels(){
-        this.buildMode = new BuildMode(this.systems, this.game);
+        this.buildMode = new BuildModes(this.systems, this.game);
 
         let newPlant = MainGUI.setupRightPanelPair(this.game, "Generator", [], BuildingPanelButtons.NewPlant, 0);
+        newPlant.onOpen.add(function(this: MainGUI){
+            this.buildMode.generatorMode();
+        }, this);
+
         let newSubstation = MainGUI.setupRightPanelPair(this.game, "Substation", [], BuildingPanelButtons.NewSubstation, 1);
         newSubstation.onOpen.add(function(this: MainGUI){
             this.buildMode.substationMode();
         }, this);
-        newSubstation.onClose.add(function(this: MainGUI){
-            this.buildMode.closeMode();
-        }, this);
+
         let newLine = MainGUI.setupRightPanelPair(this.game, "Line", [], BuildingPanelButtons.NewTransmissionLine, 2);
+        newLine.onOpen.add(function(this: MainGUI){
+            this.buildMode.lineMode();
+        }, this);
 
         new OnlyOneOpen([newPlant, newSubstation, newLine]);
     }

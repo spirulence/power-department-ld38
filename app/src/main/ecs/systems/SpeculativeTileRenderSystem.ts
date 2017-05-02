@@ -1,8 +1,10 @@
 import {System} from "./System";
 import {EntityManager} from "tiny-ecs";
 import {Speculative} from "../components/Speculative";
+import {TileRender} from "../components/TileRender";
+import {TilePosition} from "../components/TilePosition";
 
-export class SpeculativeRenderSystem implements System{
+export class SpeculativeTileRenderSystem implements System{
     private game: Phaser.Game;
     private sprites: Phaser.Sprite[];
     private group: Phaser.Group;
@@ -14,15 +16,15 @@ export class SpeculativeRenderSystem implements System{
     }
 
     process(entities: EntityManager): void {
-        let allSpeculative = entities.queryComponents([Speculative]);
+        let allSpeculative = entities.queryComponents([Speculative, TileRender, TilePosition]);
 
         while(allSpeculative.length > this.sprites.length){
             this.sprites.push(this.game.add.sprite(-100, -100, "overlay-tiles"));
         }
 
-        while(allSpeculative.length < this.sprites.length){
+        if(allSpeculative.length < this.sprites.length){
             for(let sprite of this.sprites){
-                sprite.position.set(-1000,-1000);
+                sprite.position.set(-1000, -1000);
             }
         }
 
@@ -31,8 +33,8 @@ export class SpeculativeRenderSystem implements System{
             let position = speculative.tilePosition;
             this.sprites[index].x = position.x * 8;
             this.sprites[index].y = position.y * 8;
-            this.sprites[index].frame = 5;
-
+            this.sprites[index].frame = speculative.tileRender.tile;
+            this.sprites[index].alpha = 0.3;
             index++;
         }
     }

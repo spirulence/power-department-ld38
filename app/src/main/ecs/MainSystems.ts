@@ -6,7 +6,8 @@ import {NetworkHealthSystem} from "./systems/NetworkHealthSystem";
 import {UpdateConnectedStatusSystem} from "./systems/UpdateConnectedStatusSystem";
 import {Level} from "./entities/Level";
 import {SpeculativeAddSystem} from "./systems/SpeculativeAddSystem";
-import {SpeculativeRenderSystem} from "./systems/SpeculativeRenderSystem";
+import {SpeculativeTileRenderSystem} from "./systems/SpeculativeTileRenderSystem";
+import {SpeculativeLineRenderSystem} from "./systems/SpeculativeLineRenderSystem";
 
 export class MainSystems{
     private entities: TinyECS.EntityManager;
@@ -40,7 +41,8 @@ export class MainSystems{
         //systems for building things
         this.speculative = new SpeculativeAddSystem(this.entities);
         this.systems.push(this.speculative);
-        this.systems.push(new SpeculativeRenderSystem(game));
+        this.systems.push(new SpeculativeTileRenderSystem(game));
+        this.systems.push(new SpeculativeLineRenderSystem(game));
     }
 
     public update() {

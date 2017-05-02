@@ -44,6 +44,10 @@ declare module "tiny-ecs"{
         createEntity(): any;
 
         queryComponents(list: any[]): any[];
+
+        removeEntitiesByTag(tag: string): void;
+
+        removeEntity(entity: any): void;
     }
 
 
