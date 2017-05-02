@@ -11,17 +11,17 @@ export class TileRenderSystem implements System{
     private group: Phaser.Group;
     public dragSprites: Phaser.Sprite[];
 
-    constructor(game: Phaser.Game){
+    constructor(game: Phaser.Game, layer: Phaser.Group){
         this.game = game;
         this.sprites = [];
-        this.group = game.add.group();
+        this.group = layer;
     }
 
     process(entities: EntityManager): void {
         let allSpeculative = entities.queryComponents([Built, TileRender, TilePosition]);
 
         while(allSpeculative.length * 2 > this.sprites.length){
-            this.sprites.push(this.game.add.sprite(-100, -100, "overlay-tiles"));
+            this.sprites.push(this.game.add.sprite(-100, -100, "overlay-tiles", null, this.group));
         }
 
         if(allSpeculative.length * 2 < this.sprites.length){

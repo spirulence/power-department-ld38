@@ -10,10 +10,10 @@ export class LineRenderSystem implements System{
     private sprites: Phaser.Sprite[];
     private group: Phaser.Group;
 
-    constructor(game: Phaser.Game){
+    constructor(game: Phaser.Game, layer: Phaser.Group){
         this.game = game;
         this.sprites = [];
-        this.group = game.add.group();
+        this.group = layer;
     }
 
     process(entities: EntityManager): void {
@@ -22,7 +22,7 @@ export class LineRenderSystem implements System{
         let numSprites = LineRenderSystem.totalSprites(allSpeculative);
 
         while(numSprites > this.sprites.length){
-            this.sprites.push(this.game.add.sprite(-1000, -1000, "overlay-tiles"));
+            this.sprites.push(this.game.add.sprite(-1000, -1000, "overlay-tiles", null, this.group));
         }
 
         if(numSprites < this.sprites.length){

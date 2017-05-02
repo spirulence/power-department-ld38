@@ -10,10 +10,10 @@ export class PlanFacilityRender implements System{
     private sprites: Phaser.Sprite[];
     private group: Phaser.Group;
 
-    constructor(game: Phaser.Game){
+    constructor(game: Phaser.Game, layer: Phaser.Group){
         this.game = game;
         this.sprites = [];
-        this.group = game.add.group();
+        this.group = layer;
     }
 
     process(entities: EntityManager): void {
@@ -21,7 +21,7 @@ export class PlanFacilityRender implements System{
             entities.queryComponents([Hovered, TileRender, TilePosition]));
 
         while(allSpeculative.length > this.sprites.length){
-            this.sprites.push(this.game.add.sprite(-100, -100, "overlay-tiles"));
+            this.sprites.push(this.game.add.sprite(-100, -100, "overlay-tiles", null, this.group));
         }
 
         if(allSpeculative.length < this.sprites.length){

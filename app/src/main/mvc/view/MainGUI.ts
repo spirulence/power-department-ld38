@@ -22,19 +22,21 @@ export class MainGUI{
     private lowerRightPanel: OpenablePanel;
     private rightPanels: OnlyOneOpen;
 
-    constructor(game: Phaser.Game, systems: MainSystems){
+    constructor(game: Phaser.Game, systems: MainSystems, layer: Phaser.Group){
         this.game = game;
         this.systems = systems;
 
-        new LeftPanels(game, systems);
-        this.setupLowerRightPanel();
-        this.rightPanels = this.setupRightPanels();
+        new LeftPanels(game, systems, layer);
+        this.setupLowerRightPanel(layer);
+        this.rightPanels = this.setupRightPanels(layer);
     }
 
-    private setupRightPanels(){
+    private setupRightPanels(layer: Phaser.Group){
         this.buildMode = new BuildModes(this.systems, this.game);
 
         let newPlant = MainGUI.setupRightPanelPair(this.game, "Generator", [], BuildingPanelButtons.NewPlant, 1);
+        layer.add(newPlant.panel1.group);
+        layer.add(newPlant.panel2.group);
         newPlant.onOpen.add(function(this: MainGUI){
             this.buildMode.generatorMode();
             this.lowerRightPanel.open();
@@ -44,6 +46,8 @@ export class MainGUI{
         }, this);
 
         let newSubstation = MainGUI.setupRightPanelPair(this.game, "Substation", [], BuildingPanelButtons.NewSubstation, 2);
+        layer.add(newSubstation.panel1.group);
+        layer.add(newSubstation.panel2.group);
         newSubstation.onOpen.add(function(this: MainGUI){
             this.buildMode.substationMode();
             this.lowerRightPanel.open();
@@ -106,7 +110,7 @@ export class MainGUI{
         }, game);
     }
 
-    private setupLowerRightPanel() {
+    private setupLowerRightPanel(layer: Phaser.Group) {
         this.lowerRightPanel = new OpenablePanel({
             panelKey: "lower-panel",
 
@@ -123,6 +127,7 @@ export class MainGUI{
             slotStart: {x:5, y:20},
             slotSpacing: {x:0, y:20}
         },this.game);
+        layer.add(this.lowerRightPanel.group);
 
         this.game.add.button(0,-32,"buttons", null, null, 9, 8, 8, 8, this.lowerRightPanel.group).onInputUp.add(function(this: MainGUI){
             this.systems.builder.build();

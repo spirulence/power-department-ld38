@@ -7,14 +7,14 @@ export class LeftPanels{
 
     private static readonly TEXT_STYLE = {font: "15px monospace", fill: "#000", boundsAlignV:"bottom", boundsAlignH:"right"};
 
-    constructor(game: Phaser.Game, systems: MainSystems){
-        this.setupMoney(game, systems);
+    constructor(game: Phaser.Game, systems: MainSystems, layer: Phaser.Group){
+        this.setupMoney(game, systems, layer);
         // this.setupWorkers(game, systems);
         // this.setupHappiness(game, systems);
     }
 
-    private setupMoney(game: Phaser.Game, systems: MainSystems) {
-        let smallPanelGroup = game.add.group();
+    private setupMoney(game: Phaser.Game, systems: MainSystems, layer: Phaser.Group) {
+        let smallPanelGroup = game.add.group(layer);
         let moneyButton = game.add.button(104, 0,"buttons", null, null, 13,12,12,12, smallPanelGroup);
         let smallPanelText = game.add.text(0,0, systems.cash.totalCash.toString(), LeftPanels.TEXT_STYLE, smallPanelGroup);
         smallPanelText.setTextBounds(0,0,104,32);

@@ -24,6 +24,7 @@ import {PlanLineValidator} from "./systems/PlanLineValidator";
 import {PlanFacilityValidator} from "./systems/PlanFacilityValidator";
 import {PlanLine} from "./systems/PlanLine";
 import {PlanLineDragging} from "./systems/PlanLineDragging";
+import {MainLayers} from "../MainLayers";
 
 export class MainSystems{
     private entities: TinyECS.EntityManager;
@@ -38,8 +39,10 @@ export class MainSystems{
     cash: CashSystem;
     payroll: PayrollSystem;
     builder: PlanBuilder;
+    private layers: MainLayers;
 
-    constructor(game: Phaser.Game){
+    constructor(game: Phaser.Game, layers: MainLayers){
+        this.layers = layers;
         this.entities = new TinyECS.EntityManager();
         this.initialEntities();
 
@@ -51,7 +54,7 @@ export class MainSystems{
 
     private addSystems(game: Phaser.Game) {
         //systems that load data
-        this.mapLoader = new MapLoaderSystem(game);
+        this.mapLoader = new MapLoaderSystem(game, this.layers.map);
         this.systems.push(this.mapLoader);
         this.systems.push(new ConsumerLoaderSystem());
 
@@ -72,8 +75,8 @@ export class MainSystems{
         this.systems.push(this.planLine);
         this.systems.push(new PlanLineDragging(this.planLine));
         this.systems.push(this.planFacility);
-        this.systems.push(new PlanFacilityRender(game));
-        this.systems.push(new SpeculativeLineRenderSystem(game));
+        this.systems.push(new PlanFacilityRender(game, this.layers.planOthers));
+        this.systems.push(new SpeculativeLineRenderSystem(game, this.layers.planLines));
         this.speculativeCost = new PlanCost();
         this.systems.push(this.speculativeCost);
         this.builder = new PlanBuilder();
@@ -88,8 +91,8 @@ export class MainSystems{
         this.systems.push(this.payroll);
 
         //rendering systems
-        this.systems.push(new LineRenderSystem(game));
-        this.systems.push(new TileRenderSystem(game));
+        this.systems.push(new LineRenderSystem(game, this.layers.lines));
+        this.systems.push(new TileRenderSystem(game, this.layers.others));
     }
 
     public update() {

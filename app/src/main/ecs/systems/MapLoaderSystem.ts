@@ -6,9 +6,11 @@ export class MapLoaderSystem implements System{
     private game: Phaser.Game;
 
     public lastLoaded: MapComponent;
+    private layer: Phaser.Group;
 
-    constructor(game: Phaser.Game){
+    constructor(game: Phaser.Game, layer: Phaser.Group){
         this.game = game;
+        this.layer = layer;
     }
 
     process(entities: EntityManager): void {
@@ -25,7 +27,7 @@ export class MapLoaderSystem implements System{
     }
 
     private load(map: MapComponent) {
-        map.mapGroup = this.game.add.group(null, "map");
+        map.mapGroup = this.layer;
         this.game.world.add(map.mapGroup);
         this.game.world.sendToBack(map.mapGroup);
 
