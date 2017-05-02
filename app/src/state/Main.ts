@@ -13,7 +13,8 @@ export class Main extends Phaser.State {
 
     create() {
         this.systems = new MainSystems(this.game);
-        this.gui = new MainGUI(this.game);
+        this.systems.update();
+        this.gui = new MainGUI(this.game, this.systems);
     }
 
     update(){

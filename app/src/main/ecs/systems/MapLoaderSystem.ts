@@ -5,6 +5,8 @@ import {MapComponent} from "../components/MapComponent";
 export class MapLoaderSystem implements System{
     private game: Phaser.Game;
 
+    public lastLoaded: MapComponent;
+
     constructor(game: Phaser.Game){
         this.game = game;
     }
@@ -37,12 +39,13 @@ export class MapLoaderSystem implements System{
 
         let baseLayer = tilemap.createLayer("base", null, null, map.mapGroup);
         baseLayer.resizeWorld();
-        baseLayer.visible = false;
+        baseLayer.alpha = 0;
         map.baseLayer = baseLayer;
 
         let gridLayer = tilemap.createLayer("grid", null, null, map.mapGroup);
         gridLayer.alpha = 0.125;
 
+        this.lastLoaded = map;
     }
 
     private addImageLayers(map: MapComponent) {

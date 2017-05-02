@@ -5,12 +5,18 @@ import {ConsumerLoaderSystem} from "./systems/ConsumerLoaderSystem";
 import {NetworkHealthSystem} from "./systems/NetworkHealthSystem";
 import {UpdateConnectedStatusSystem} from "./systems/UpdateConnectedStatusSystem";
 import {Level} from "./entities/Level";
+import {SpeculativeAddSystem} from "./systems/SpeculativeAddSystem";
+import {SpeculativeRenderSystem} from "./systems/SpeculativeRenderSystem";
 
 export class MainSystems{
     private entities: TinyECS.EntityManager;
 
     private systems: System[];
-    private networkHealth: NetworkHealthSystem;
+
+    networkHealth: NetworkHealthSystem;
+    mapLoader: MapLoaderSystem;
+
+    speculative: SpeculativeAddSystem;
 
     constructor(game: Phaser.Game){
         this.entities = new TinyECS.EntityManager();
@@ -22,13 +28,19 @@ export class MainSystems{
 
     private addSystems(game: Phaser.Game) {
         //systems that load data
-        this.systems.push(new MapLoaderSystem(game));
+        this.mapLoader = new MapLoaderSystem(game);
+        this.systems.push(this.mapLoader);
         this.systems.push(new ConsumerLoaderSystem());
 
         //systems dealing with network health
         this.systems.push(new UpdateConnectedStatusSystem());
         this.networkHealth = new NetworkHealthSystem();
         this.systems.push(this.networkHealth);
+
+        //systems for building things
+        this.speculative = new SpeculativeAddSystem(this.entities);
+        this.systems.push(this.speculative);
+        this.systems.push(new SpeculativeRenderSystem(game));
     }
 
     public update() {
