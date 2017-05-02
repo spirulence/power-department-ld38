@@ -55,6 +55,16 @@ export class BuildModes{
         this.systems.speculative.clearHover();
         this.mode = new LineMode(this.systems.speculative);
     }
+
+    close() {
+        if(this.mode != null){
+            this.mode = null;
+        }
+    }
+
+    isOpen() {
+        return this.mode != null;
+    }
 }
 
 interface BuildMode{

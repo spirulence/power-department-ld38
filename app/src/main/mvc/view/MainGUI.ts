@@ -3,6 +3,7 @@ import {ToggleTogether} from "./ToggleTogether";
 import {OnlyOneOpen} from "./OnlyOneOpen";
 import {MainSystems} from "../../ecs/MainSystems";
 import {BuildModes} from "./BuildModes";
+import {BoundTextLabel} from "../model/BoundTextLabel";
 
 enum BuildingPanelButtons {
     NewTransmissionLine = 0,
@@ -12,16 +13,18 @@ enum BuildingPanelButtons {
 
 export class MainGUI{
 
-    // private static readonly LEFT_TEXT_STYLE = {font: "15px monospace", fill: "#000", boundsAlignV:"bottom", boundsAlignH:"right"};
-    private static readonly RIGHT_TEXT_STYLE = {font: "15px monospace", fill: "#000", boundsAlignV:"bottom", boundsAlignH:"left"};
+    // private static readonly LEFT_TEXT_STYLE = {font: "13px monospace", fill: "#000", boundsAlignV:"bottom", boundsAlignH:"right"};
+    private static readonly RIGHT_TEXT_STYLE = {font: "13px monospace", fill: "#000", boundsAlignV:"bottom", boundsAlignH:"left"};
     private game: Phaser.Game;
     private systems: MainSystems;
     private buildMode: BuildModes;
+    private lowerRightPanel: OpenablePanel;
 
     constructor(game: Phaser.Game, systems: MainSystems){
         this.game = game;
         this.systems = systems;
 
+        this.setupLowerRightPanel();
         this.setupRightPanels();
     }
 
@@ -31,19 +34,33 @@ export class MainGUI{
         let newPlant = MainGUI.setupRightPanelPair(this.game, "Generator", [], BuildingPanelButtons.NewPlant, 0);
         newPlant.onOpen.add(function(this: MainGUI){
             this.buildMode.generatorMode();
+            this.lowerRightPanel.open();
+        }, this);
+        newPlant.onClose.add(function(this: MainGUI){
+            this.buildMode.close();
         }, this);
 
         let newSubstation = MainGUI.setupRightPanelPair(this.game, "Substation", [], BuildingPanelButtons.NewSubstation, 1);
         newSubstation.onOpen.add(function(this: MainGUI){
             this.buildMode.substationMode();
+            this.lowerRightPanel.open();
+        }, this);
+        newSubstation.onClose.add(function(this: MainGUI){
+            this.buildMode.close();
         }, this);
 
         let newLine = MainGUI.setupRightPanelPair(this.game, "Line", [], BuildingPanelButtons.NewTransmissionLine, 2);
         newLine.onOpen.add(function(this: MainGUI){
             this.buildMode.lineMode();
+            this.lowerRightPanel.open();
+        }, this);
+        newLine.onClose.add(function(this: MainGUI){
+            this.buildMode.close();
         }, this);
 
-        new OnlyOneOpen([newPlant, newSubstation, newLine]);
+        new OnlyOneOpen([newPlant, newSubstation, newLine]).onAllClosed.add(function(this: MainGUI){
+            this.lowerRightPanel.close();
+        }, this);
     }
 
     static setupRightPanelPair(game: Phaser.Game, text: string, slots: PIXI.DisplayObject[], buttonImage: BuildingPanelButtons, yIndex: number){
@@ -58,7 +75,8 @@ export class MainGUI{
         return new OpenablePanel({
             panelKey: "right-big-panel",
 
-            openPosition: {x: 1000 - 170, y: 144},
+            // openPosition: {x: 1000 - 170, y: 144},
+            openPosition: {x:1000, y:144},
             closedPosition: {x: 1000, y: 160},
             animationTime: 250,
 
@@ -77,7 +95,7 @@ export class MainGUI{
         let textElement = game.add.text(0,0,text, MainGUI.RIGHT_TEXT_STYLE, smallPanelGroup);
         textElement.setTextBounds(35, 0, 102, 32);
 
-        let smallPanel = new OpenablePanel({
+        return new OpenablePanel({
             panelKey: "right-small-panel",
 
             openPosition: openPosition,
@@ -85,10 +103,27 @@ export class MainGUI{
             animationTime: 250,
 
             slots: [smallPanelGroup],
-            slotStart: {x:0, y:0},
-            slotSpacing: {x:0, y:0}
+            slotStart: {x: 0, y: 0},
+            slotSpacing: {x: 0, y: 0}
         }, game);
+    }
 
-        return smallPanel;
+    private setupLowerRightPanel() {
+        this.lowerRightPanel = new OpenablePanel({
+            panelKey: "lower-panel",
+
+            openPosition: {x:823, y:500},
+            closedPosition: {x:850, y:625},
+            animationTime: 250,
+
+            slots: [
+                new BoundTextLabel(this.game, "materials:", 120, this.systems.speculativeCost.materials, 100).group,
+                new BoundTextLabel(this.game, "land:", 120, this.systems.speculativeCost.land, 100).group,
+                new BoundTextLabel(this.game, "workers:", 120, this.systems.speculativeCost.workers, 100).group,
+                new BoundTextLabel(this.game, "power loss:", 120, this.systems.speculativeCost.resistance, 100).group,
+            ],
+            slotStart: {x:5, y:20},
+            slotSpacing: {x:0, y:20}
+        },this.game);
     }
 }

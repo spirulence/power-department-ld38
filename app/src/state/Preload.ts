@@ -6,6 +6,7 @@ export class Preload extends Phaser.State {
         this.load.setPreloadSprite(this.preloadBar);
 
         //user interface resources
+        this.load.image("lower-panel", "assets/interface/lower_panel.png");
         this.load.image("left-big-panel", "assets/interface/left_big_panel.png");
         this.load.image("right-big-panel", "assets/interface/right_big_panel.png");
         this.load.image("left-small-panel", "assets/interface/left_small_panel.png");

@@ -8,6 +8,7 @@ import {Level} from "./entities/Level";
 import {SpeculativeAddSystem} from "./systems/SpeculativeAddSystem";
 import {SpeculativeTileRenderSystem} from "./systems/SpeculativeTileRenderSystem";
 import {SpeculativeLineRenderSystem} from "./systems/SpeculativeLineRenderSystem";
+import {SpeculativeCostSystem} from "./systems/SpeculativeCostSystem";
 
 export class MainSystems{
     private entities: TinyECS.EntityManager;
@@ -27,6 +28,8 @@ export class MainSystems{
         this.addSystems(game);
     }
 
+    speculativeCost: SpeculativeCostSystem;
+
     private addSystems(game: Phaser.Game) {
         //systems that load data
         this.mapLoader = new MapLoaderSystem(game);
@@ -43,6 +46,8 @@ export class MainSystems{
         this.systems.push(this.speculative);
         this.systems.push(new SpeculativeTileRenderSystem(game));
         this.systems.push(new SpeculativeLineRenderSystem(game));
+        this.speculativeCost = new SpeculativeCostSystem();
+        this.systems.push(this.speculativeCost);
     }
 
     public update() {

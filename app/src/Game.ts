@@ -10,7 +10,7 @@ class Game extends Phaser.Game {
     constructor() {
         super({
             width: 1000,
-            height: 625,
+            height: 600,
             transparent: false,
             enableDebug: true
         });

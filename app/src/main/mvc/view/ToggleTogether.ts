@@ -17,11 +17,12 @@ export class ToggleTogether{
 
         toggler.events.onInputUp.add(function (this: ToggleTogether) {
             if(!this.isOpen()){
+                this.toggle();
                 this.onOpen.dispatch(this);
             }else {
+                this.toggle();
                 this.onClose.dispatch(this);
             }
-            this.toggle();
         }, this);
 
         this.toggler = toggler;
@@ -37,10 +38,13 @@ export class ToggleTogether{
     }
 
     close(){
-        if(this.isOpen()){
-            this.onClose.dispatch(this);
-        }
+        let wasOpen = this.isOpen();
+
         this.panel1.close();
         this.panel2.close();
+
+        if(wasOpen){
+            this.onClose.dispatch(this);
+        }
     }
 }
