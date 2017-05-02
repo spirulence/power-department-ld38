@@ -33,6 +33,9 @@ export class MainGUI{
         newSubstation.onOpen.add(function(this: MainGUI){
             this.buildMode.substationMode();
         }, this);
+        newSubstation.onClose.add(function(this: MainGUI){
+            this.buildMode.closeMode();
+        }, this);
         let newLine = MainGUI.setupRightPanelPair(this.game, "Line", [], BuildingPanelButtons.NewTransmissionLine, 2);
 
         new OnlyOneOpen([newPlant, newSubstation, newLine]);

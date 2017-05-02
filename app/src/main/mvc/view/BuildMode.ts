@@ -57,6 +57,7 @@ export class BuildMode{
     closeMode(){
         if(this.mode != null) {
             this.mode.close();
+            this.mode = null;
         }
     }
 }

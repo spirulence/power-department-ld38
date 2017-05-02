@@ -13,4 +13,8 @@ export class SubstationMode{
     click(x: number, y:number){
         this.addSystem.addSubstation(x, y, false);
     }
+
+    close(){
+
+    }
 }
