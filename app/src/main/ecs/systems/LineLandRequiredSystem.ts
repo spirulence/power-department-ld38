@@ -16,7 +16,6 @@ export class LineLandRequiredSystem extends BaseSystem{
         let length = entity.twoPoints.calcLength();
         entity.landRequired.land = Math.ceil(length * LineLandRequiredSystem.LENGTH_FACTOR)
             + LineLandRequiredSystem.PLUS_MINIMUM;
-        console.log("processed a land item");
     }
 
 }
