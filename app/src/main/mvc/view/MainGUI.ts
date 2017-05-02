@@ -120,7 +120,7 @@ export class MainGUI{
                 new BoundTextLabel(this.game, "materials:", 120, this.systems.speculativeCost.materials, 100).group,
                 new BoundTextLabel(this.game, "land:", 120, this.systems.speculativeCost.land, 100).group,
                 new BoundTextLabel(this.game, "workers:", 120, this.systems.speculativeCost.workers, 100).group,
-                new BoundTextLabel(this.game, "power loss:", 120, this.systems.speculativeCost.resistance, 100).group,
+                new BoundTextLabel(this.game, "power loss:", 120, this.systems.speculativeCost.powerLoss, 100).group,
             ],
             slotStart: {x:5, y:20},
             slotSpacing: {x:0, y:20}

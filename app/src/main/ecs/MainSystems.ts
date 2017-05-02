@@ -9,6 +9,10 @@ import {SpeculativeAddSystem} from "./systems/SpeculativeAddSystem";
 import {SpeculativeTileRenderSystem} from "./systems/SpeculativeTileRenderSystem";
 import {SpeculativeLineRenderSystem} from "./systems/SpeculativeLineRenderSystem";
 import {SpeculativeCostSystem} from "./systems/SpeculativeCostSystem";
+import {LineLandRequiredSystem} from "./systems/LineLandRequiredSystem";
+import {LineWorkersRequiredSystem} from "./systems/LineWorkersRequiredSystem";
+import {LineMaterialsRequiredSystem} from "./systems/LineMaterialsRequiredSystem";
+import {LinePowerLossSystem} from "./systems/LinePowerLossSystem";
 
 export class MainSystems{
     private entities: TinyECS.EntityManager;
@@ -41,7 +45,13 @@ export class MainSystems{
         this.networkHealth = new NetworkHealthSystem();
         this.systems.push(this.networkHealth);
 
-        //systems for building things
+        //systems for figuring out how much things cost
+        this.systems.push(new LineLandRequiredSystem());
+        this.systems.push(new LineWorkersRequiredSystem());
+        this.systems.push(new LineMaterialsRequiredSystem());
+        this.systems.push(new LinePowerLossSystem());
+
+        //systems for planning the building of things
         this.speculative = new SpeculativeAddSystem(this.entities);
         this.systems.push(this.speculative);
         this.systems.push(new SpeculativeTileRenderSystem(game));

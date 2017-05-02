@@ -1,3 +1,3 @@
 export class Resistance{
-    resistance = 1;
+    resistance = 0.5;
 }
