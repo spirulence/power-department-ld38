@@ -17,16 +17,16 @@ export class Preload extends Phaser.State {
         this.load.image("tileset", "assets/tileset.png");
         this.load.spritesheet("overlay-tiles", "assets/tileset.png", 8, 8);
 
-        // this.load.tilemap("tutorial", "assets/tutorial.json", null, Phaser.Tilemap.TILED_JSON);
+        // this.load.tilemap("tutorial", "assets/tutorial.json", null, Phaser.MapComponent.TILED_JSON);
 
         //level1 resourecs
         this.load.tilemap("map1", "assets/rural-1.json", null, Phaser.Tilemap.TILED_JSON);
         this.load.json("map1-json", "assets/rural-1.json");
         this.load.image("rural-1.png", "assets/rural-1.png");
 
-        // this.load.tilemap("map2", "assets/delta-2.json", null, Phaser.Tilemap.TILED_JSON);
-        // this.load.tilemap("map3", "assets/islands-3.json", null, Phaser.Tilemap.TILED_JSON);
-        // this.load.tilemap("map4", "assets/icy-4.json", null, Phaser.Tilemap.TILED_JSON);
+        // this.load.tilemap("map2", "assets/delta-2.json", null, Phaser.MapComponent.TILED_JSON);
+        // this.load.tilemap("map3", "assets/islands-3.json", null, Phaser.MapComponent.TILED_JSON);
+        // this.load.tilemap("map4", "assets/icy-4.json", null, Phaser.MapComponent.TILED_JSON);
         // this.load.image("tutorial.png", "assets/tutorial.png");
         // this.load.image("delta-2.png", "assets/delta-2.png");
         //

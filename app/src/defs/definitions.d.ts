@@ -37,3 +37,15 @@ declare namespace Phaser{
     }
 }
 
+declare module "tiny-ecs"{
+    class EntityManager{
+        create(): any;
+
+        createEntity(): any;
+
+        queryComponents(list: any[]): any[];
+    }
+
+
+}
+

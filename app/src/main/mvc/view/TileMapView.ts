@@ -29,7 +29,7 @@ export interface MapTile{
 
 
 /**
- * An abstraction on top of a Phaser.Tilemap for convenience. Adds methods to view all layers of one tile at the
+ * An abstraction on top of a Phaser.MapComponent for convenience. Adds methods to view all layers of one tile at the
  * same time. Handles zooming and scrolling, and mouse input events.
  */
 export class TileMapView{

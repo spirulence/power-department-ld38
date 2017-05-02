@@ -26,7 +26,7 @@
     "webpack-dev-server": "2.4.5"
   },
   "dependencies": {
-    "@types/lodash": "^4.14.63",
+    "@types/lodash": "4.14.63",
     "css-loader": "0.28.0",
     "extract-text-webpack-plugin": "2.1.0",
     "html-webpack-plugin": "2.28.0",
@@ -37,6 +37,7 @@
     "rimraf": "2.6.1",
     "script-loader": "0.7.0",
     "style-loader": "0.16.1",
+    "tiny-ecs": "^2.0.0",
     "ts-events": "^3.2.0",
     "ts-loader": "2.0.3",
     "typescript": "2.2.2",
