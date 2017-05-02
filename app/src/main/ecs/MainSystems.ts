@@ -5,14 +5,25 @@ import {ConsumerLoaderSystem} from "./systems/ConsumerLoaderSystem";
 import {NetworkHealthSystem} from "./systems/NetworkHealthSystem";
 import {UpdateConnectedStatusSystem} from "./systems/UpdateConnectedStatusSystem";
 import {Level} from "./entities/Level";
-import {SpeculativeAddSystem} from "./systems/SpeculativeAddSystem";
-import {SpeculativeTileRenderSystem} from "./systems/SpeculativeTileRenderSystem";
-import {SpeculativeLineRenderSystem} from "./systems/SpeculativeLineRenderSystem";
-import {SpeculativeCostSystem} from "./systems/SpeculativeCostSystem";
+import {PlanFacility} from "./systems/PlanFacility";
+import {PlanFacilityRender} from "./systems/PlanFacilityRender";
+import {SpeculativeLineRenderSystem} from "./systems/PlanLineRender";
+import {PlanCost} from "./systems/PlanCost";
 import {LineLandRequiredSystem} from "./systems/LineLandRequiredSystem";
 import {LineWorkersRequiredSystem} from "./systems/LineWorkersRequiredSystem";
 import {LineMaterialsRequiredSystem} from "./systems/LineMaterialsRequiredSystem";
 import {LinePowerLossSystem} from "./systems/LinePowerLossSystem";
+import {Cash} from "./components/Cash";
+import {CashSystem} from "./systems/CashSystem";
+import {PayrollSystem} from "./systems/PayrollSystem";
+import {Employee} from "./entities/Employee";
+import {PlanBuilder} from "./systems/PlanBuilder";
+import {TileRenderSystem} from "./systems/TileRenderSystem";
+import {LineRenderSystem} from "./systems/LineRenderSystem";
+import {PlanLineValidator} from "./systems/PlanLineValidator";
+import {PlanFacilityValidator} from "./systems/PlanFacilityValidator";
+import {PlanLine} from "./systems/PlanLine";
+import {PlanLineDragging} from "./systems/PlanLineDragging";
 
 export class MainSystems{
     private entities: TinyECS.EntityManager;
@@ -22,7 +33,11 @@ export class MainSystems{
     networkHealth: NetworkHealthSystem;
     mapLoader: MapLoaderSystem;
 
-    speculative: SpeculativeAddSystem;
+    planFacility: PlanFacility;
+    planLine: PlanLine;
+    cash: CashSystem;
+    payroll: PayrollSystem;
+    builder: PlanBuilder;
 
     constructor(game: Phaser.Game){
         this.entities = new TinyECS.EntityManager();
@@ -32,7 +47,7 @@ export class MainSystems{
         this.addSystems(game);
     }
 
-    speculativeCost: SpeculativeCostSystem;
+    speculativeCost: PlanCost;
 
     private addSystems(game: Phaser.Game) {
         //systems that load data
@@ -51,13 +66,30 @@ export class MainSystems{
         this.systems.push(new LineMaterialsRequiredSystem());
         this.systems.push(new LinePowerLossSystem());
 
-        //systems for planning the building of things
-        this.speculative = new SpeculativeAddSystem(this.entities);
-        this.systems.push(this.speculative);
-        this.systems.push(new SpeculativeTileRenderSystem(game));
+        //systems for planning and building of things
+        this.planFacility = new PlanFacility(this.entities);
+        this.planLine = new PlanLine(this.entities);
+        this.systems.push(this.planLine);
+        this.systems.push(new PlanLineDragging(this.planLine));
+        this.systems.push(this.planFacility);
+        this.systems.push(new PlanFacilityRender(game));
         this.systems.push(new SpeculativeLineRenderSystem(game));
-        this.speculativeCost = new SpeculativeCostSystem();
+        this.speculativeCost = new PlanCost();
         this.systems.push(this.speculativeCost);
+        this.builder = new PlanBuilder();
+        this.systems.push(this.builder);
+        this.systems.push(new PlanFacilityValidator());
+        this.systems.push(new PlanLineValidator());
+
+        //financial systems
+        this.cash = new CashSystem();
+        this.systems.push(this.cash);
+        this.payroll = new PayrollSystem();
+        this.systems.push(this.payroll);
+
+        //rendering systems
+        this.systems.push(new LineRenderSystem(game));
+        this.systems.push(new TileRenderSystem(game));
     }
 
     public update() {
@@ -68,5 +100,13 @@ export class MainSystems{
 
     private initialEntities() {
         Level.make(this.entities);
+
+        let startingCash = this.entities.createEntity();
+        startingCash.addComponent(Cash);
+        startingCash.cash.amount = 250;
+
+        for(let i = 0; i < 50; i++){
+            Employee.make(this.entities);
+        }
     }
 }

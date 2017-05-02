@@ -11,7 +11,7 @@ export class Preload extends Phaser.State {
         this.load.image("right-big-panel", "assets/interface/right_big_panel.png");
         this.load.image("left-small-panel", "assets/interface/left_small_panel.png");
         this.load.image("right-small-panel", "assets/interface/right_small_panel.png");
-        this.load.spritesheet('buttons', 'assets/buttons.png', 32, 32);
+        this.load.spritesheet('buttons', 'assets/interface/buttons.png', 32, 32);
 
         //resources needed for every level
         this.load.image("grid-tile", "assets/grid-tile.png");

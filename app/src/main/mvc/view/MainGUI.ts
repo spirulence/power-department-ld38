@@ -3,7 +3,8 @@ import {ToggleTogether} from "./ToggleTogether";
 import {OnlyOneOpen} from "./OnlyOneOpen";
 import {MainSystems} from "../../ecs/MainSystems";
 import {BuildModes} from "./BuildModes";
-import {BoundTextLabel} from "../model/BoundTextLabel";
+import {BoundTextLabel} from "./BoundTextLabel";
+import {LeftPanels} from "./LeftPanels";
 
 enum BuildingPanelButtons {
     NewTransmissionLine = 0,
@@ -19,48 +20,45 @@ export class MainGUI{
     private systems: MainSystems;
     private buildMode: BuildModes;
     private lowerRightPanel: OpenablePanel;
+    private rightPanels: OnlyOneOpen;
 
     constructor(game: Phaser.Game, systems: MainSystems){
         this.game = game;
         this.systems = systems;
 
+        new LeftPanels(game, systems);
         this.setupLowerRightPanel();
-        this.setupRightPanels();
+        this.rightPanels = this.setupRightPanels();
     }
 
     private setupRightPanels(){
         this.buildMode = new BuildModes(this.systems, this.game);
 
-        let newPlant = MainGUI.setupRightPanelPair(this.game, "Generator", [], BuildingPanelButtons.NewPlant, 0);
+        let newPlant = MainGUI.setupRightPanelPair(this.game, "Generator", [], BuildingPanelButtons.NewPlant, 1);
         newPlant.onOpen.add(function(this: MainGUI){
             this.buildMode.generatorMode();
             this.lowerRightPanel.open();
         }, this);
         newPlant.onClose.add(function(this: MainGUI){
-            this.buildMode.close();
+            // this.buildMode.close();
         }, this);
 
-        let newSubstation = MainGUI.setupRightPanelPair(this.game, "Substation", [], BuildingPanelButtons.NewSubstation, 1);
+        let newSubstation = MainGUI.setupRightPanelPair(this.game, "Substation", [], BuildingPanelButtons.NewSubstation, 2);
         newSubstation.onOpen.add(function(this: MainGUI){
             this.buildMode.substationMode();
             this.lowerRightPanel.open();
         }, this);
         newSubstation.onClose.add(function(this: MainGUI){
+            // this.buildMode.close();
+        }, this);
+
+        let panels = new OnlyOneOpen([newPlant, newSubstation]);
+        panels.onAllClosed.add(function(this: MainGUI){
+            // this.lowerRightPanel.close();
             this.buildMode.close();
         }, this);
 
-        let newLine = MainGUI.setupRightPanelPair(this.game, "Line", [], BuildingPanelButtons.NewTransmissionLine, 2);
-        newLine.onOpen.add(function(this: MainGUI){
-            this.buildMode.lineMode();
-            this.lowerRightPanel.open();
-        }, this);
-        newLine.onClose.add(function(this: MainGUI){
-            this.buildMode.close();
-        }, this);
-
-        new OnlyOneOpen([newPlant, newSubstation, newLine]).onAllClosed.add(function(this: MainGUI){
-            this.lowerRightPanel.close();
-        }, this);
+        return panels;
     }
 
     static setupRightPanelPair(game: Phaser.Game, text: string, slots: PIXI.DisplayObject[], buttonImage: BuildingPanelButtons, yIndex: number){
@@ -87,8 +85,8 @@ export class MainGUI{
     }
 
     private static setupSmallRightPanel(game: Phaser.Game, text: string, button: Phaser.Button, yIndex: number) {
-        let closedPosition = new Phaser.Point(1000-32, 16 + yIndex * 32);
-        let openPosition = new Phaser.Point(864, 16 + yIndex * 32);
+        let closedPosition = new Phaser.Point(1000-32, 404 + yIndex * 32);
+        let openPosition = new Phaser.Point(885, 404 + yIndex * 32);
 
         let smallPanelGroup = game.add.group();
         smallPanelGroup.add(button);
@@ -113,7 +111,7 @@ export class MainGUI{
             panelKey: "lower-panel",
 
             openPosition: {x:823, y:500},
-            closedPosition: {x:850, y:625},
+            closedPosition: {x:850, y:650},
             animationTime: 250,
 
             slots: [
@@ -125,5 +123,14 @@ export class MainGUI{
             slotStart: {x:5, y:20},
             slotSpacing: {x:0, y:20}
         },this.game);
+
+        this.game.add.button(0,-32,"buttons", null, null, 9, 8, 8, 8, this.lowerRightPanel.group).onInputUp.add(function(this: MainGUI){
+            this.systems.builder.build();
+        },this);
+        this.game.add.button(32,-32,"buttons", null, null, 11, 10, 10, 10, this.lowerRightPanel.group).onInputUp.add(function(this: MainGUI){
+            this.systems.builder.cancel();
+            this.lowerRightPanel.close();
+            this.rightPanels.closeAll();
+        },this);
     }
 }

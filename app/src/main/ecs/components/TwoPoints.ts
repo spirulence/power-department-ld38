@@ -9,4 +9,9 @@ export class TwoPoints{
         let absY = Math.abs(this.from.y - this.to.y);
         return Math.max(absX, absY) + 1;
     }
+
+    equals(other: TwoPoints){
+        return (this.from.equals(other.from) && this.to.equals(other.to)) ||
+            (this.from.equals(other.to) && this.to.equals(other.from));
+    }
 }

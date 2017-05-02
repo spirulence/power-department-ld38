@@ -1,6 +1,6 @@
 import {MainSystems} from "../../ecs/MainSystems";
 import {MapComponent} from "../../ecs/components/MapComponent";
-import {SpeculativeAddSystem} from "../../ecs/systems/SpeculativeAddSystem";
+import {PlanFacility} from "../../ecs/systems/PlanFacility";
 
 export class BuildModes{
     private systems: MainSystems;
@@ -42,23 +42,19 @@ export class BuildModes{
     }
 
     substationMode(){
-        this.systems.speculative.clearHover();
-        this.mode = new SubstationMode(this.systems.speculative);
+        this.systems.planFacility.clearHover();
+        this.mode = new SubstationMode(this.systems.planFacility);
     }
 
     generatorMode(){
-        this.systems.speculative.clearHover();
-        this.mode = new GeneratorMode(this.systems.speculative);
-    }
-
-    lineMode(){
-        this.systems.speculative.clearHover();
-        this.mode = new LineMode(this.systems.speculative);
+        this.systems.planFacility.clearHover();
+        this.mode = new GeneratorMode(this.systems.planFacility);
     }
 
     close() {
         if(this.mode != null){
             this.mode = null;
+            this.systems.planFacility.clearHover();
         }
     }
 
@@ -74,62 +70,36 @@ interface BuildMode{
 }
 
 class SubstationMode implements BuildMode{
-    private addSystem: SpeculativeAddSystem;
+    private facilityPlanner: PlanFacility;
 
-    constructor(addSystem: SpeculativeAddSystem){
-        this.addSystem = addSystem;
+    constructor(addSystem: PlanFacility){
+        this.facilityPlanner = addSystem;
     }
 
     hover(x: number, y:number){
-        this.addSystem.addSubstation(x, y, true);
+        this.facilityPlanner.addSubstation(x, y, true);
     }
 
     click(x: number, y:number){
-        this.addSystem.addSubstation(x, y, false);
-        this.addSystem.clearHover();
+        this.facilityPlanner.addSubstation(x, y, false);
+        this.facilityPlanner.clearHover();
     }
 }
 
 class GeneratorMode implements BuildMode{
-    private addSystem: SpeculativeAddSystem;
+    private facilityPlanner: PlanFacility;
 
-    constructor(addSystem: SpeculativeAddSystem){
-        this.addSystem = addSystem;
+    constructor(addSystem: PlanFacility){
+        this.facilityPlanner = addSystem;
     }
 
     hover(x: number, y:number){
-        this.addSystem.addGenerator(x, y, true);
+        this.facilityPlanner.addGenerator(x, y, true);
     }
 
     click(x: number, y:number){
-        this.addSystem.addGenerator(x, y, false);
-        this.addSystem.clearHover();
-    }
-}
-
-class LineMode implements BuildMode{
-    private addSystem: SpeculativeAddSystem;
-    private source: {x: number, y: number};
-
-    constructor(addSystem: SpeculativeAddSystem){
-        this.addSystem = addSystem;
-        this.source = null;
-    }
-
-    hover(x: number, y:number){
-        if(this.source != null) {
-            this.addSystem.addLine(this.source, {x: x, y: y}, true);
-        }
-    }
-
-    click(x: number, y:number){
-        if(this.source == null) {
-            this.source = {x: x, y: y};
-        }else{
-            this.addSystem.addLine(this.source, {x: x, y: y}, false);
-            this.source = {x:x, y:y};
-            this.addSystem.clearHover();
-        }
+        this.facilityPlanner.addGenerator(x, y, false);
+        this.facilityPlanner.clearHover();
     }
 }
 

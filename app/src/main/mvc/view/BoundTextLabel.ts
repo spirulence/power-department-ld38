@@ -1,4 +1,4 @@
-import {EventedQuantity} from "./EventedQuantity";
+import {EventedQuantity} from "../model/EventedQuantity";
 
 export class BoundTextLabel{
     group: Phaser.Group;

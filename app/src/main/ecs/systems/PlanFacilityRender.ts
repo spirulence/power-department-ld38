@@ -1,10 +1,11 @@
 import {System} from "./System";
 import {EntityManager} from "tiny-ecs";
-import {Speculative} from "../components/Speculative";
+import {Planned} from "../components/Planned";
 import {TileRender} from "../components/TileRender";
 import {TilePosition} from "../components/TilePosition";
+import {Hovered} from "../components/Hovered";
 
-export class SpeculativeTileRenderSystem implements System{
+export class PlanFacilityRender implements System{
     private game: Phaser.Game;
     private sprites: Phaser.Sprite[];
     private group: Phaser.Group;
@@ -16,7 +17,8 @@ export class SpeculativeTileRenderSystem implements System{
     }
 
     process(entities: EntityManager): void {
-        let allSpeculative = entities.queryComponents([Speculative, TileRender, TilePosition]);
+        let allSpeculative = entities.queryComponents([Planned, TileRender, TilePosition]).concat(
+            entities.queryComponents([Hovered, TileRender, TilePosition]));
 
         while(allSpeculative.length > this.sprites.length){
             this.sprites.push(this.game.add.sprite(-100, -100, "overlay-tiles"));

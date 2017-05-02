@@ -1,9 +1,10 @@
 import {System} from "./System";
 import {EntityManager} from "tiny-ecs";
-import {Speculative} from "../components/Speculative";
+import {Planned} from "../components/Planned";
 import {TwoPoints} from "../components/TwoPoints";
 import {TileRender} from "../components/TileRender";
 import {line} from "../../../utils/Bresenham";
+import {Hovered} from "../components/Hovered";
 
 export class SpeculativeLineRenderSystem implements System{
     private game: Phaser.Game;
@@ -17,7 +18,8 @@ export class SpeculativeLineRenderSystem implements System{
     }
 
     process(entities: EntityManager): void {
-        let allSpeculative = entities.queryComponents([Speculative, TwoPoints, TileRender]);
+        let allSpeculative = entities.queryComponents([Planned, TwoPoints, TileRender]).concat(
+            entities.queryComponents([Hovered, TileRender, TwoPoints]));
 
         let numSprites = SpeculativeLineRenderSystem.totalSprites(allSpeculative);
 

@@ -2,8 +2,10 @@ import {ToggleTogether} from "./ToggleTogether";
 
 export class OnlyOneOpen{
     onAllClosed: Phaser.Signal;
+    private panels: ToggleTogether[];
 
     constructor(panels: ToggleTogether[]){
+        this.panels = panels;
 
         function closeAllBut(dontClose: ToggleTogether){
             for(let panel of panels){
@@ -35,5 +37,11 @@ export class OnlyOneOpen{
         }
 
         this.onAllClosed = onAllClosed;
+    }
+
+    closeAll(){
+        for(let panel of this.panels){
+            panel.close();
+        }
     }
 }
