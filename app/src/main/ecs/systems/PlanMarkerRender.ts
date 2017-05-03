@@ -1,8 +1,9 @@
 import {SpriteForEachTileRenderSystem} from "./SpriteForEachTileRenderSystem";
 
-export class PlanFacilityRender extends SpriteForEachTileRenderSystem{
+export class PlanMarkerRender extends SpriteForEachTileRenderSystem{
 
     protected renderHook(_renderable: any, _sprite: Phaser.Sprite) {
-        _sprite.alpha = 0.7;
+        _sprite.position.add(8,8);
+        _sprite.frame = 10;
     }
 }

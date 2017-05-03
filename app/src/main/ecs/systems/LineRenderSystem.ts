@@ -1,25 +1,28 @@
 import {System} from "./System";
 import {EntityManager} from "tiny-ecs";
 import {TwoPoints} from "../components/TwoPoints";
-import {TileRender} from "../components/TileRender";
-import {Built} from "../components/Built";
 
-export class LineRenderSystem implements System{
-    private game: Phaser.Game;
+export class TwoPointsRenderSystem implements System{
     private group: Phaser.Group;
     private graphics: Phaser.Graphics;
+    private classes: any[];
+    private lineColor: number;
+    private lineWidth: number;
 
-    constructor(game: Phaser.Game, layer: Phaser.Group){
-        this.game = game;
+    constructor(layer: Phaser.Group, classes: any[], lineColor: number){
+        this.lineWidth = 3;
         this.group = layer;
-        this.graphics = game.add.graphics(0, 0, layer);
+        this.lineColor = lineColor;
+        this.graphics = new Phaser.Graphics(layer.game);
+        layer.add(this.graphics);
+        this.classes = classes.concat([TwoPoints]);
     }
 
     process(entities: EntityManager): void {
-        let builtLines = entities.queryComponents([Built, TwoPoints, TileRender]);
+        let builtLines = entities.queryComponents(this.classes);
 
         this.graphics.clear();
-        this.graphics.lineStyle(3, 0xf4e542);
+        this.graphics.lineStyle(this.lineWidth, this.lineColor);
         let index = 0;
         for(let line of builtLines){
             let points: TwoPoints = line.twoPoints;

@@ -15,14 +15,15 @@ export class PlanLineDragging implements System{
         let dragging = entities.queryComponents([Dragging]).slice();
 
         for(let dragged of dragging){
-            let current = dragged.dragging.current.clone();
+            let current = dragged.dragging.current;
             let x = Math.floor(current.x / 8);
             let y = Math.floor(current.y / 8);
             let source = {x:Math.floor(dragged.dragging.start.x / 8), y:Math.floor(dragged.dragging.start.y / 8)};
             let destination = {x:x, y:y};
             if(dragged.dragging.ended){
-                entities.removeEntity(dragged);
+                dragged.removeComponent(Dragging);
                 this.planLine.addLine(source, destination, false);
+                this.planLine.clearHover();
             }else{
                 this.planLine.addLine(source, destination, true);
             }

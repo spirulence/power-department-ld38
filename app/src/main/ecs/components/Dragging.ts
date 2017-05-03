@@ -1,5 +1,5 @@
 export class Dragging{
-    start: Phaser.Point;
-    current: Phaser.Point;
+    start = new Phaser.Point();
+    current = new Phaser.Point();
     ended = false;
 }
