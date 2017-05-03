@@ -3,13 +3,11 @@ import {EntityManager} from "tiny-ecs";
 import {Substation} from "../entities/Substation";
 import {Planned} from "../components/Planned";
 import {Generator} from "../entities/Generator";
-import {buildChecker} from "../../../utils/MapChecker";
-import {TilePosition} from "../components/TilePosition";
 import {Hovered} from "../components/Hovered";
+import {NeedsValidation} from "../components/NeedsValidation";
 
 export class PlanFacility implements System{
     private entities: EntityManager;
-    private checker: (range: number, position: {x: number; y: number}) => boolean;
 
     constructor(entities: EntityManager){
         this.entities = entities;
@@ -27,6 +25,7 @@ export class PlanFacility implements System{
             entity.addComponent(Hovered);
         } else {
             entity.addComponent(Planned);
+            entity.addComponent(NeedsValidation);
         }
     }
 
@@ -35,7 +34,6 @@ export class PlanFacility implements System{
     }
 
     process(_entities: EntityManager): void {
-        this.checker = buildChecker(_entities.queryComponents([Planned, TilePosition]));
     }
 
     addGenerator(x: number, y: number, hovered: boolean) {
