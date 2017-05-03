@@ -78,9 +78,10 @@ export class MainSystems{
         this.planLine = new PlanLine(this.entities);
         this.speculativeCost = new PlanCost();
         this.builder = new PlanBuilder();
-
+        //
         this.systems.push(this.planLine);
         this.systems.push(new DragSystem(this.layers.planLines, [Planned]));
+        this.systems.push(new DragSystem(this.layers.planLines, [Built]));
         this.systems.push(new PlanLineDragging(this.planLine));
         this.systems.push(this.planFacility);
         this.systems.push(this.speculativeCost);
@@ -94,12 +95,12 @@ export class MainSystems{
         this.payroll = new PayrollSystem();
         this.systems.push(this.payroll);
 
-        //rendering systems
+        //plan rendering systems
         this.systems.push(new TwoPointsRenderSystem(this.layers.planLines, [Hovered], 0x3494ac));
         this.systems.push(new TwoPointsRenderSystem(this.layers.planLines, [Planned], 0x54b4ff));
         this.systems.push(new PlanFacilityRender(this.layers.planOthers, [Planned]));
         this.systems.push(new PlanMarkerRender(this.layers.planOthers, [Planned]));
-
+        //build render systems
         this.systems.push(new TwoPointsRenderSystem(this.layers.lines, [Built], 0xf4e542));
         this.systems.push(new SpriteForEachTileRenderSystem(this.layers.others, [Built]));
     }
