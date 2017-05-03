@@ -41,9 +41,10 @@ export class MainGUI{
             this.buildMode.generatorMode();
             this.lowerRightPanel.open();
         }, this);
-        newPlant.onClose.add(function(this: MainGUI){
-            // this.buildMode.close();
-        }, this);
+
+        this.game.input.keyboard.addKey(Phaser.KeyCode.P).onUp.add(function(){
+            newPlant.toggle();
+        });
 
         let newSubstation = MainGUI.setupRightPanelPair(this.game, "Substation", [], BuildingPanelButtons.NewSubstation, 2);
         layer.add(newSubstation.panel1.group);
@@ -52,13 +53,13 @@ export class MainGUI{
             this.buildMode.substationMode();
             this.lowerRightPanel.open();
         }, this);
-        newSubstation.onClose.add(function(this: MainGUI){
-            // this.buildMode.close();
-        }, this);
+
+        this.game.input.keyboard.addKey(Phaser.KeyCode.L).onUp.add(function(){
+            newSubstation.toggle();
+        });
 
         let panels = new OnlyOneOpen([newPlant, newSubstation]);
         panels.onAllClosed.add(function(this: MainGUI){
-            // this.lowerRightPanel.close();
             this.buildMode.close();
         }, this);
 
