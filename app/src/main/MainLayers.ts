@@ -8,12 +8,12 @@ export class MainLayers{
     gui: Phaser.Group;
 
     constructor(game: Phaser.Game){
-        this.map = game.add.group(null);
-        this.planLines = game.add.group(null);
-        this.planOthers = game.add.group(null);
-        this.lines = game.add.group(null);
-        this.others = game.add.group(null);
-        this.gui = game.add.group(null);
+        this.map = game.make.group(null);
+        this.planLines = game.make.group(null);
+        this.planOthers = game.make.group(null);
+        this.lines = game.make.group(null);
+        this.others = game.make.group(null);
+        this.gui = game.make.group(null);
 
         game.world.add(this.map);
         game.world.add(this.planLines);

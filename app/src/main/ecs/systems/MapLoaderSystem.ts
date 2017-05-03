@@ -28,10 +28,9 @@ export class MapLoaderSystem implements System{
 
     private load(map: MapComponent) {
         map.mapGroup = this.layer;
-        this.game.world.add(map.mapGroup);
         this.game.world.sendToBack(map.mapGroup);
 
-        map.map = this.game.add.tilemap(map.mapID);
+        map.map = this.game.make.tilemap(map.mapID);
         let tilemap = map.map;
 
         this.addImageLayers(map);
