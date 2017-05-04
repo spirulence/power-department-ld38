@@ -6,7 +6,9 @@
     <link href="styles.css" rel="stylesheet"></head>
 </head>
 <body>
-<video autoplay controls onloadstart="this.volume=0.4" class="cutscene" id="cutscene" src="assets/<%= htmlWebpackPlugin.options.cutscene %>"></video>
+<video autoplay controls onloadstart="this.volume=0.6" class="cutscene" id="cutscene" src="assets/<%= htmlWebpackPlugin.options.cutscene %>">
+<track label="English" kind="subtitles" srclang="en" src="assets/video/<%= htmlWebpackPlugin.options.cutscene_subtitles %>.vtt" default />
+</video>
 <p id="next-button" class="center-text visible"><a class="center-text" href="<%= htmlWebpackPlugin.options.level %>">Next Level</a></p>
 </body>
 </html>
