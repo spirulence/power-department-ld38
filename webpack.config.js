@@ -47,8 +47,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Intro",
             filename: "level1intro.html",
-            cutscene:"video/01-intro.webm",
-            cutscene_subtitles: "01-intro",
+            cutscene:"01-intro",
             level: "level1.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -57,7 +56,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level2intro.html",
-            cutscene:"video/02_board_meeting.webm",
+            cutscene:"02_board_meeting",
             level: "level2.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -66,7 +65,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level3intro.html",
-            cutscene:"video/03_warning.webm",
+            cutscene:"03_warning",
             level: "level3intro2.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -74,7 +73,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level3intro2.html",
-            cutscene:"video/ridiculous.webm",
+            cutscene:"ridiculous",
             level: "level3.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -83,7 +82,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "level4intro.html",
-            cutscene:"video/we-are-close-indeed.webm",
+            cutscene:"we-are-close-indeed",
             level: "level4.html",
             template: "app/templates/cutscene.ejs",
             chunks: []
@@ -92,7 +91,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Cutscene",
             filename: "outro.html",
-            cutscene:"video/outro.webm",
+            cutscene:"outro",
             level: "",
             template: "app/templates/cutscene.ejs",
             chunks: []
